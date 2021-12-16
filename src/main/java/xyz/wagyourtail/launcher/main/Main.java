@@ -1,5 +1,6 @@
 package xyz.wagyourtail.launcher.main;
 
+import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.gui.LauncherGui;
 import xyz.wagyourtail.launcher.minecraft.ProfileManager;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
@@ -42,7 +43,7 @@ public class Main {
             } else {
                 launcher = new LauncherGui(path);
             }
-            launchProfile(launcher, profileName);
+            launchProfile(launcher, profileName, username);
             return;
         }
         if (args.has("--listProfiles")) {
@@ -53,7 +54,7 @@ public class Main {
         new LauncherGui(path);
     }
 
-    public static void launchProfile(Launcher launcher, String name) throws IOException {
+    public static void launchProfile(Launcher launcher, String name, String username) throws IOException {
         Optional<Profile> byId = launcher.profiles.getProfileById(name);
         if (byId.isEmpty()) {
             List<ProfileManager.ProfileWithID> byName = launcher.profiles.getProfileByName(name);
@@ -72,12 +73,12 @@ public class Main {
                 if (choice < 1 || choice > byName.size()) {
                     System.out.println("Invalid choice");
                 }
-                launcher.launch(byName.get(choice - 1).profile());
+                launcher.launch(byName.get(choice - 1).profile(), username);
             } else {
-                launcher.launch(byName.get(0).profile());
+                launcher.launch(byName.get(0).profile(), username);
             }
         } else {
-            launcher.launch(byId.get());
+            launcher.launch(byId.get(), username);
         }
     }
 }

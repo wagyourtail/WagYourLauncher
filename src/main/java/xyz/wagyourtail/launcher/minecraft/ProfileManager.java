@@ -3,7 +3,7 @@ package xyz.wagyourtail.launcher.minecraft;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import xyz.wagyourtail.launcher.main.Launcher;
+import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 
 import java.io.IOException;

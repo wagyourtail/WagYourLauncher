@@ -4,8 +4,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import xyz.wagyourtail.launcher.main.Launcher;
+import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.minecraft.data.VersionManifest;
+import xyz.wagyourtail.util.OSUtils;
+import xyz.wagyourtail.util.SemVerUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +42,8 @@ public record Version(
         String type
     ) {
 
+    private static final Map<String, Version> resolveCache = new HashMap<>();
+
 
 
     public static Version resolve(Launcher launcher, String versionId) throws IOException {
@@ -48,14 +52,12 @@ public record Version(
         } else if (versionId.equals("latest-release")) {
             return resolve(launcher, VersionManifest.getLatestRelease().id());
         }
-        Path versionsPath = launcher.minecraftPath.resolve("versions");
-        if (!Files.exists(versionsPath)) {
-            Files.createDirectory(versionsPath);
+        if (resolveCache.containsKey(versionId)) {
+            return resolveCache.get(versionId);
         }
-
-        Path versionPath = versionsPath.resolve(versionId);
+        Path versionPath = launcher.minecraftPath.resolve("versions").resolve(versionId);
         if (!Files.exists(versionPath)) {
-            Files.createDirectory(versionPath);
+            Files.createDirectories(versionPath);
         }
 
         // check if version exists, if not download it
@@ -96,7 +98,7 @@ public record Version(
                 throw new IOException("Failed to parse version.json", e.getCause());
             }
         }
-
+        resolveCache.put(versionId, version);
         return version;
     }
 
@@ -150,6 +152,16 @@ public record Version(
                 get(json, "features").map(JsonElement::getAsJsonObject).map(e -> e.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e2 -> e2.getValue().getAsBoolean()))).orElse(null)
             );
         }
+
+        public boolean testRules(Launcher launcher) {
+            if (os != null && !os.test(launcher)) return !action.equals("allow");
+            if (features != null) {
+                for (Map.Entry<String, Boolean> entry : features.entrySet()) {
+                    if (launcher.features.contains(entry.getKey()) != entry.getValue()) return !action.equals("allow");
+                }
+            }
+            return action.equals("allow");
+        }
     }
 
     public record Os(String name, String version, String arch) {
@@ -160,6 +172,12 @@ public record Version(
                     get(json, "version").map(JsonElement::getAsString).orElse(null),
                     get(json, "arch").map(JsonElement::getAsString).orElse(null)
             );
+        }
+
+        public boolean test(Launcher launcher) {
+            if (name != null && !name.equals(OSUtils.getOSId())) return false;
+            if (version != null && !SemVerUtils.matches(OSUtils.getOsVersion(), version)) return false;
+            return arch == null || arch.equals(OSUtils.getOsArch());
         }
     }
 
@@ -191,7 +209,7 @@ public record Version(
                         value[i] = jsonValues.get(i).getAsString();
                     }
                     return new Argument(
-                            get(json, "rule").map(JsonElement::getAsJsonArray).map(Rule::parse).orElse(null),
+                            get(json, "rule").map(JsonElement::getAsJsonArray).map(Rule::parse).orElse(new Rule[0]),
                             value
                     );
                 } else {
@@ -282,17 +300,17 @@ public record Version(
                     }).orElse(null),
                     get(json, "natives").map(JsonElement::getAsJsonObject).map(e -> e.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e1 -> e1.getValue().getAsString()))).orElse(null),
                     get(json, "extract").map(JsonElement::getAsJsonObject).map(Extract::parse).orElse(null),
-                    get(json, "rules").map(JsonElement::getAsJsonArray).map(Rule::parse).orElse(null)
+                    get(json, "rules").map(JsonElement::getAsJsonArray).map(Rule::parse).orElse(new Rule[0])
             );
         }
     }
 
-    public record Downloads(Artifact artifact, Artifact classifier) {
+    public record Downloads(Artifact artifact, Map<String, Artifact> classifier) {
 
         public static Downloads parse(JsonObject json) {
             return new Downloads(
                     get(json, "artifact").map(JsonElement::getAsJsonObject).map(Artifact::parse).orElse(null),
-                    get(json, "classifier").map(JsonElement::getAsJsonObject).map(Artifact::parse).orElse(null)
+                    get(json, "classifiers").map(JsonElement::getAsJsonObject).map(e -> e.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e1 -> Artifact.parse(e1.getValue().getAsJsonObject())))).orElse(null)
             );
         }
     }

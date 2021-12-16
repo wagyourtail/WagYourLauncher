@@ -1,6 +1,6 @@
 package xyz.wagyourtail.launcher.gui;
 
-import xyz.wagyourtail.launcher.main.Launcher;
+import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 
 import java.io.IOException;
@@ -13,7 +13,7 @@ public class LauncherGui extends Launcher {
     }
 
     @Override
-    public void launch(Profile profile) throws IOException {
+    public void launch(Profile profile, String username) throws IOException {
 
     }
 

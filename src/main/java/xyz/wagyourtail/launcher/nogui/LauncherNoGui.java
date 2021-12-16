@@ -1,6 +1,6 @@
 package xyz.wagyourtail.launcher.nogui;
 
-import xyz.wagyourtail.launcher.main.Launcher;
+import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 
 import java.io.IOException;
@@ -14,8 +14,8 @@ public class LauncherNoGui extends Launcher {
     }
 
     @Override
-    public void launch(Profile profile) throws IOException {
-        profile.launch(this, System.out, System.err);
+    public void launch(Profile profile, String username) throws IOException {
+        profile.launch(this, username, System.out, System.err);
     }
 
     public void listProfiles() {
