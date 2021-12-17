@@ -10,6 +10,11 @@ public class ConsoleLogListener implements LogListener {
     }
 
     @Override
+    public void onFatal(String fatal) {
+        System.out.println(withColor(fatal, ConsoleColors.RED));
+    }
+
+    @Override
     public void onError(String error) {
         System.out.println(withColor(error, ConsoleColors.RED));
     }
@@ -33,6 +38,7 @@ public class ConsoleLogListener implements LogListener {
     public void log(LogLevel level, String message) {
         switch (level) {
             case INFO -> onInfo(message);
+            case FATAL -> onFatal(message);
             case ERROR -> onError(message);
             case WARN -> onWarning(message);
             case DEBUG -> onDebug(message);

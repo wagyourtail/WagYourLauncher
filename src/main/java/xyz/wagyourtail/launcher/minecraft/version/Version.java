@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.internal.JavaVersion;
 import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.minecraft.LibraryManager;
 import xyz.wagyourtail.launcher.minecraft.data.VersionManifest;
@@ -65,12 +66,18 @@ public record Version(
         return javaVersion.majorVersion();
     }
 
-    public String[] getJavaArgs(Launcher launcher, Profile profile, Path nativePath, String javaArgs) throws IOException {
-        String cp = getClassPath(launcher, profile);
+    public String[] getJavaArgs(Launcher launcher, Profile profile, Path nativePath, String javaArgs, String classPath) throws IOException {
         String natives = nativePath.toString();
         List<String> args = new ArrayList<>();
         if (javaArgs != null) {
             args.addAll(Arrays.asList(javaArgs.split(" ")));
+        } else {
+            args.addAll(
+                Arrays.asList(
+                    "-Xmx4G -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M"
+                        .split(" ")
+                )
+            );
         }
         if (arguments != null && arguments.jvm() != null) {
             for (Version.Arguments.Argument arg : arguments().jvm()) {
@@ -83,11 +90,87 @@ public record Version(
                 }
             }
         } else if (inheritsFrom != null) {
-            args.addAll(Arrays.asList(inheritsFrom.getJavaArgs(launcher, profile, nativePath, null)));
+            args.addAll(Arrays.asList(inheritsFrom.getJavaArgs(launcher, profile, nativePath, null, classPath)));
+        } else {
+            // default args
+            Arguments.Argument[] arguments = new Arguments.Argument[]{
+                new Arguments.Argument(
+                    new Rule[] {
+                        new Rule("allow", new Os("osx", null, null), null)
+                    },
+                    new String[] {
+                        "-XstartOnFirstThread"
+                    }
+                ),
+                new Arguments.Argument(
+                    new Rule[] {
+                        new Rule("allow", new Os("windows", null, null), null)
+                    },
+                    new String[] {
+                        "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"
+                    }
+                ),
+                new Arguments.Argument(
+                    new Rule[] {
+                        new Rule("allow", new Os("windows", "^10\\.", null), null)
+                    },
+                    new String[] {
+                        "-Dos.name=Windows 10",
+                        "-Dos.version=10.0"
+                    }
+                ),
+                new Arguments.Argument(
+                    new Rule[] {
+                        new Rule("allow", new Os(null, null, "x86"), null)
+                    },
+                    new String[] {
+                        "-Xss1M"
+                    }
+                ),
+                new Arguments.Argument(
+                    new Rule[0],
+                    new String[] {
+                        "-Djava.library.path=${natives_directory}"
+                    }
+                ),
+                new Arguments.Argument(
+                    new Rule[0],
+                    new String[] {
+                        "-Dminecraft.launcher.brand=${launcher_name}",
+                    }
+                ),
+                new Arguments.Argument(
+                    new Rule[0],
+                    new String[] {
+                        "-Dminecraft.launcher.version=${launcher_version}",
+                    }
+                ),
+                new Arguments.Argument(
+                    new Rule[0],
+                    new String[] {
+                        "-cp"
+                    }
+                ),
+                new Arguments.Argument(
+                    new Rule[0],
+                    new String[] {
+                        "${classpath}"
+                    }
+                )
+            };
+            for (Version.Arguments.Argument arg : arguments) {
+                if (arg.rules().length == 0) {
+                    args.addAll(List.of(arg.values()));
+                } else {
+                    if (Arrays.stream(arg.rules()).allMatch(rule -> rule.testRules(launcher))) {
+                        args.addAll(List.of(arg.values()));
+                    }
+                }
+            }
         }
         return args.stream().map(e -> e
             .replace("${natives_directory}", natives)
-            .replace("${classpath}", cp)
+            .replace("${classpath}", classPath)
             .replace("${launcher_name}", launcher.getName())
             .replace("${launcher_version}", launcher.getVersion())
         ).toArray(String[]::new);

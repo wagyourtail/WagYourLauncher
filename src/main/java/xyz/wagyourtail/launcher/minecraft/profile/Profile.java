@@ -10,6 +10,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.SequenceInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -74,7 +75,7 @@ public record Profile(
 
         List<String> args = new ArrayList<>();
         args.add(getJavaDir(launcher));
-        args.addAll(Arrays.asList(resolvedVersion.getJavaArgs(launcher, this, nativePath(launcher), javaArgs)));
+        args.addAll(Arrays.asList(resolvedVersion.getJavaArgs(launcher, this, nativePath(launcher), javaArgs, resolvedVersion.getClassPath(launcher, this))));
         args.addAll(Arrays.asList(resolvedVersion.getLogging(launcher)));
         //TODO: add logging for -Dlog4j.configurationFile fix
         args.add(resolvedVersion.getMainClass());
@@ -84,7 +85,6 @@ public record Profile(
 
         ProcessBuilder pb = new ProcessBuilder(args.toArray(String[]::new));
         pb.directory(gameDir.toFile());
-        pb.redirectErrorStream(true);
         Process p = pb.start();
 //        new Thread(() -> {
 //            try {
@@ -93,7 +93,24 @@ public record Profile(
 //                e.printStackTrace();
 //            }
 //        }).start();
-
+        new Thread(() -> {
+            try {
+                p.getErrorStream().transferTo(new OutputStream() {
+                    String line = "";
+                    @Override
+                    public void write(int b) throws IOException {
+                        if (b == '\n') {
+                            logger.onError(line);
+                            line = "";
+                        } else {
+                            line += (char) b;
+                        }
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
         pipeOutput(launcher, p, logger);
     }
 

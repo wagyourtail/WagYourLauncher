@@ -40,7 +40,9 @@ public class LibraryManager {
         }
         List<Path> paths = new ArrayList<>();
         if (library.downloads() != null) {
-            paths.add(resolveArtifact(profile, library.downloads().artifact()));
+            if (library.downloads().artifact() != null) {
+                paths.add(resolveArtifact(profile, library.downloads().artifact()));
+            }
             if (library.natives() != null) {
                 Version.Artifact artifact = library.downloads().classifier().get(library.natives().get(OSUtils.getOSId()));
                 Path natives = resolveArtifact(profile, artifact);
