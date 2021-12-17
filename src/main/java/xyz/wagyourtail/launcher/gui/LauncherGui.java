@@ -1,6 +1,7 @@
 package xyz.wagyourtail.launcher.gui;
 
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.LogListener;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 
 import java.io.IOException;
@@ -10,6 +11,11 @@ public class LauncherGui extends Launcher {
     public LauncherGui(Path minecraftPath) throws IOException {
         super(minecraftPath);
         init();
+    }
+
+    @Override
+    public LogListener getLogger(Profile profile) {
+        return null;
     }
 
     @Override

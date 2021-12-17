@@ -6,7 +6,6 @@ import xyz.wagyourtail.launcher.minecraft.ProfileManager;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import xyz.wagyourtail.launcher.nogui.LauncherNoGui;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -19,16 +18,16 @@ public class Main {
         new ArgHandler.Arg("--launchProfile", "Directly launch the specified profile", 2, "-lp"),
         new ArgHandler.Arg("--username", "The username to use when logging in", 2, "-u"),
         new ArgHandler.Arg("--nogui", "Disables the GUI", 1, "-n"),
-        new ArgHandler.Arg("--path", "the path of the .minecraft folder, defaults to ./", 2, "-p"),
-        new ArgHandler.Arg("--listProfiles", "Lists the profiles in the specified .minecraft folder", 1, "-lps")
+        new ArgHandler.Arg("--path", "the path of the .minecraft folder, defaults to ./", 2, "-p")
     );
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 //        main(argHandler.parseStringArgs(args));
             main(argHandler.parseStringArgs(new String[] {"-lp", "316bf4dd299a8eb4fe431cea3a2c029d", "-u", "wagyourtail", "-n"}));
+//        main(argHandler.parseStringArgs(new String[] {"-n"}));
     }
 
-    public static void main(ArgHandler.ParsedArgs args) throws IOException {
+    public static void main(ArgHandler.ParsedArgs args) throws Exception {
         if (args.has("--help")) {
             argHandler.printHelp();
             return;
@@ -50,11 +49,14 @@ public class Main {
             new LauncherNoGui(path).listProfiles();
             return;
         }
-
-        new LauncherGui(path);
+        if (args.has("--nogui")) {
+            new LauncherNoGui(path).run();
+        } else {
+            new LauncherGui(path);
+        }
     }
 
-    public static void launchProfile(Launcher launcher, String name, String username) throws IOException {
+    public static void launchProfile(Launcher launcher, String name, String username) throws Exception {
         Optional<Profile> byId = launcher.profiles.getProfileById(name);
         if (byId.isEmpty()) {
             List<ProfileManager.ProfileWithID> byName = launcher.profiles.getProfileByName(name);
@@ -69,6 +71,7 @@ public class Main {
                     ProfileManager.ProfileWithID prof = byName.get(i);
                      System.out.println((i + 1) + "\t" + prof.id() + "\t" + prof.profile().name() + "\t(" + prof.profile().lastVersionId() + ")");
                 }
+                System.out.print("> ");
                 int choice = scanner.nextInt();
                 if (choice < 1 || choice > byName.size()) {
                     System.out.println("Invalid choice");

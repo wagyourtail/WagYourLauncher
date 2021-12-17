@@ -1,19 +1,24 @@
 package xyz.wagyourtail.launcher.minecraft.profile;
 
 import xyz.wagyourtail.launcher.Launcher;
-import xyz.wagyourtail.launcher.minecraft.LibraryManager;
+import xyz.wagyourtail.launcher.LogListener;
+import xyz.wagyourtail.launcher.minecraft.version.Version;
 
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.nio.file.Files;
+import java.io.SequenceInputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,13 +34,15 @@ public record Profile(
         Type type
     ) {
 
-    public Process launch(Launcher launcher, String username, PrintStream out, PrintStream err) throws IOException {
+    public void launch(Launcher launcher, String username) throws Exception {
         Version resolvedVersion = Version.resolve(launcher, lastVersionId);
+        LogListener logger = launcher.getLogger(this);
         if (resolvedVersion == null) {
-            err.println("Could not resolve version " + lastVersionId);
-            return null;
+            logger.onError("Could not resolve version " + lastVersionId);
+            logger.close();
+            return;
         }
-        out.println("Launching " + resolvedVersion.id());
+        logger.onInfo("Launching " + resolvedVersion.id() + "\n");
         /*
          /usr/lib/jvm/java-17-graalvm/bin/java
                 -Xss1M
@@ -67,97 +74,31 @@ public record Profile(
 
         List<String> args = new ArrayList<>();
         args.add(getJavaDir(launcher));
-        args.addAll(Arrays.asList(getJavaArgs(launcher)));
+        args.addAll(Arrays.asList(resolvedVersion.getJavaArgs(launcher, this, nativePath(launcher), javaArgs)));
+        args.addAll(Arrays.asList(resolvedVersion.getLogging(launcher)));
         //TODO: add logging for -Dlog4j.configurationFile fix
-        args.add(resolvedVersion.mainClass());
-        args.addAll(Arrays.asList(getGameArgs(launcher, username)));
+        args.add(resolvedVersion.getMainClass());
+        args.addAll(Arrays.asList(resolvedVersion.getGameArgs(launcher, username, gameDir)));
 
-        System.out.println("Launching with args: " + String.join(" ", args));
+        System.out.println("Launching with args: " + String.join(" ", args).replaceAll("--accessToken [^ ]+", "--accessToken ***"));
 
         ProcessBuilder pb = new ProcessBuilder(args.toArray(String[]::new));
         pb.directory(gameDir.toFile());
+        pb.redirectErrorStream(true);
         Process p = pb.start();
-        Thread t = new Thread(() -> {
-            try {
-                p.getErrorStream().transferTo(err);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        t.setDaemon(err != System.err);
-        t.start();
-        t = new Thread(() -> {
-            try {
-                p.getInputStream().transferTo(out);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        t.setDaemon(out != System.out);
-        t.start();
-        return p;
+//        new Thread(() -> {
+//            try {
+//                p.getInputStream().transferTo(System.out);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }).start();
+
+        pipeOutput(launcher, p, logger);
     }
 
-    public String[] getJavaArgs(Launcher launcher) throws IOException {
-        Version resolvedVersion = Version.resolve(launcher, lastVersionId);
-        String cp = getClassPath(launcher);
-        String natives = nativePath(launcher).toString();
-        if (resolvedVersion == null) {
-            return new String[] {};
-        }
-        List<String> args = new ArrayList<>();
-        if (javaArgs != null) {
-            args.addAll(Arrays.asList(javaArgs.split(" ")));
-        }
-        for (Version.Arguments.Argument arg : resolvedVersion.arguments().jvm()) {
-            if (arg.rules().length == 0) {
-                args.addAll(List.of(arg.values()));
-            } else {
-                if (Arrays.stream(arg.rules()).allMatch(rule -> rule.testRules(launcher))) {
-                    args.addAll(List.of(arg.values()));
-                }
-            }
-        }
-        return args.stream().map(e -> e
-                .replace("${natives_directory}", natives)
-                .replace("${classpath}", cp)
-                .replace("${launcher_name}", launcher.getName())
-                .replace("${launcher_version}", launcher.getVersion())
-            ).toArray(String[]::new);
-    }
-
-    public Path nativePath(Launcher launcher) throws IOException {
+    public Path nativePath(Launcher launcher) {
         return gameDir.resolve("natives").toAbsolutePath();
-    }
-
-    public String[] getGameArgs(Launcher launcher, String username) throws IOException {
-        Version resolvedVersion = Version.resolve(launcher, lastVersionId);
-        if (resolvedVersion == null) {
-            throw new IOException("Could not resolve game args for version " + lastVersionId);
-        }
-        List<String> args = new ArrayList<>();
-        for (Version.Arguments.Argument arg : resolvedVersion.arguments().game()) {
-            if (arg.rules().length == 0) {
-                args.addAll(List.of(arg.values()));
-            } else {
-                if (Arrays.stream(arg.rules()).allMatch(rule -> rule.testRules(launcher))) {
-                    args.addAll(List.of(arg.values()));
-                }
-            }
-        }
-        String assets = launcher.assets.resolveAssets(resolvedVersion.assetIndex()).toString();
-        return args.stream().map(e -> e
-                .replace("${auth_player_name}", username)
-                .replace("${version_name}", resolvedVersion.id())
-                .replace("${game_directory}", gameDir.toAbsolutePath().toString())
-                .replace("${assets_root}", assets)
-                .replace("${assets_index_name}", resolvedVersion.assets())
-                .replace("${auth_uuid}", launcher.auth.getUUID(username).toString())
-                .replace("${auth_access_token}", launcher.auth.getToken(username))
-                .replace("${clientid}", launcher.getName())
-                .replace("${user_type}", launcher.auth.getUserType(username))
-                .replace("${version_type}", resolvedVersion.type())
-            ).toArray(String[]::new);
     }
 
     public String getJavaDir(Launcher launcher) throws IOException {
@@ -166,71 +107,77 @@ public record Profile(
             if (resolvedVersion == null) {
                 return launcher.getJavaDir(8).toAbsolutePath().toString();
             }
-            return launcher.getJavaDir(resolvedVersion.javaVersion().majorVersion()).toAbsolutePath().toString();
+            return launcher.getJavaDir(resolvedVersion.getJavaMajorVersion()).toAbsolutePath().toString();
         } else {
             return javaDir.toAbsolutePath().toString();
         }
     }
 
-    public String getClassPath(Launcher launcher) throws IOException {
-        Version resolvedVersion = Version.resolve(launcher, lastVersionId);
-        if (resolvedVersion == null) {
-            throw new IOException("Could not resolve class path for version " + lastVersionId);
-        } else {
-            List<String> classPath = new ArrayList<>(launcher.libs.resolveAll(this, resolvedVersion.libraries()).stream().map(Path::toAbsolutePath).map(Path::toString).toList());
-            // Add the version's jar
-            classPath.add(resolveClientJar(launcher).toAbsolutePath().toString());
-            return String.join(":", classPath);
-        }
+
+
+    public void pipeOutput(Launcher launcher, Process p, LogListener logger) {
+        Thread t = new Thread(() -> {
+            XMLStreamReader reader = null;
+            AtomicBoolean end = new AtomicBoolean(false);
+            try {
+                reader = XMLInputFactory.newFactory().createXMLStreamReader(new SequenceInputStream(
+                    new ByteArrayInputStream("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root xmlns:log4j=\"https://apache.org/\">".getBytes(StandardCharsets.UTF_8)),
+                    p.getInputStream()
+                ));
+                p.onExit().thenAccept(pr -> {
+                    end.set(true);
+                    if (logger != null) {
+                        if (pr.exitValue() == 0) {
+                            logger.onInfo("Minecraft exited successfully (exit code " + pr.exitValue() + ")");
+                        } else {
+                            logger.onError("Minecraft exited with error (exit code " + pr.exitValue() + ")");
+                        }
+                    }
+                });
+                LogListener.LogLevel level = LogListener.LogLevel.INFO;
+                String time = "";
+                String thread = "";
+                while (!end.get()) {
+                    if (reader.hasNext()) {
+                        reader.next();
+                        if (reader.getEventType() == XMLStreamConstants.START_ELEMENT) {
+                            if (reader.getLocalName().equals("Event")) {
+                                level = LogListener.LogLevel.valueOf(reader.getAttributeValue(null, "level"));
+                                time = Instant.ofEpochMilli(Long.parseLong(reader.getAttributeValue(null, "timestamp"))).toString();
+                                thread = reader.getAttributeValue(null, "thread");
+                            } else if (reader.getLocalName().equals("Message") || reader.getLocalName().equals("Throwable")) {
+                                logger.log(level, String.format("[%s] [%s/%s] %s", time, thread, level, reader.getElementText()));
+                            }
+                            continue;
+                        } else if (reader.getEventType() == XMLStreamConstants.END_ELEMENT) {
+                            continue;
+                        } else if (reader.getEventType() == XMLStreamConstants.CHARACTERS) {
+                            reader.getProperty("");
+                        }
+                    }
+                    Thread.yield();
+                }
+            } catch (XMLStreamException ignored) {
+            } finally {
+                try {
+                    if (logger != null) {
+                        logger.close();
+                    }
+                } catch (Exception ignored) {
+                } finally {
+                    try {
+                        if (reader != null) {
+                            reader.close();
+                        }
+                    } catch (XMLStreamException ignored) {}
+                }
+            }
+        });
+        t.start();
     }
 
-    public Path resolveClientJar(Launcher launcher) throws IOException {
-        Version resolvedVersion = Version.resolve(launcher, lastVersionId);
-        if (resolvedVersion == null) {
-            throw new IOException("Could not resolve client jar for version " + lastVersionId);
-        } else {
-            Version.Download client = resolvedVersion.downloads().get("client");
-            if (client == null) {
-                throw new IOException("Could not resolve client jar for version " + lastVersionId);
-            }
+    public void declareNamespace(XMLStreamReader reader, String prefix, String uri) {
 
-            Path clientJar = launcher.minecraftPath.resolve("versions").resolve(lastVersionId).resolve(lastVersionId + ".jar");
-
-            if (Files.exists(clientJar)) {
-                if (Files.size(clientJar) != client.size() || !LibraryManager.shaMatch(clientJar, client.sha1())) {
-                    System.out.println("Client jar is outdated, downloading new one");
-                    Files.delete(clientJar);
-                }
-            }
-
-            if (!Files.exists(clientJar)) {
-                for (int i = 0; i < 3; i++) {
-                    try {
-                        System.out.println("Downloading client jar");
-                        Files.createDirectories(clientJar.getParent());
-                        Path tmp = clientJar.getParent().resolve(clientJar.getFileName().toString() + ".tmp");
-                        try (InputStream stream = client.url().openStream()) {
-                            Files.write(tmp, stream.readAllBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-                        }
-                        if (LibraryManager.shaMatch(tmp, client.sha1())) {
-                            Files.move(tmp, clientJar, StandardCopyOption.REPLACE_EXISTING);
-                            break;
-                        } else {
-                            throw new IOException("SHA1 mismatch");
-                        }
-                    } catch (IOException e) {
-                        System.out.println("Failed to download client jar, retrying " + i + " of 3");
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            if (!Files.exists(clientJar)) {
-                throw new IOException("Failed to download client jar");
-            }
-
-            return clientJar;
-        }
     }
 
     public enum Type {

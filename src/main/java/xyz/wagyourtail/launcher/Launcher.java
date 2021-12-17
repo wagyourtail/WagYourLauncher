@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public abstract class Launcher {
     public final Path minecraftPath;
@@ -29,7 +30,9 @@ public abstract class Launcher {
         assets = new AssetsManager(this);
     }
 
-    public abstract void launch(Profile profile, String username) throws IOException;
+    public abstract LogListener getLogger(Profile profile);
+
+    public abstract void launch(Profile profile, String username) throws Exception;
 
     public Path getJavaDir(int version) throws IOException {
         //TODO: default java dirs

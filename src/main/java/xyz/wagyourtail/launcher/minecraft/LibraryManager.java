@@ -2,7 +2,7 @@ package xyz.wagyourtail.launcher.minecraft;
 
 import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
-import xyz.wagyourtail.launcher.minecraft.profile.Version;
+import xyz.wagyourtail.launcher.minecraft.version.Version;
 import xyz.wagyourtail.util.OSUtils;
 
 import java.io.IOException;

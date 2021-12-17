@@ -1,11 +1,13 @@
 package xyz.wagyourtail.launcher.nogui;
 
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.LogListener;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Scanner;
 
 public class LauncherNoGui extends Launcher {
 
@@ -14,8 +16,13 @@ public class LauncherNoGui extends Launcher {
     }
 
     @Override
-    public void launch(Profile profile, String username) throws IOException {
-        profile.launch(this, username, System.out, System.err);
+    public LogListener getLogger(Profile profile) {
+        return new ConsoleLogListener();
+    }
+
+    @Override
+    public void launch(Profile profile, String username) throws Exception {
+        profile.launch(this, username);
     }
 
     public void listProfiles() {
@@ -44,6 +51,18 @@ public class LauncherNoGui extends Launcher {
         return s;
     }
 
+    public void run() throws InterruptedException {
+        CommandManager cmd = new CommandManager(this);
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            synchronized (System.err) {
+                System.err.wait(500);
+            }
+            System.out.print("$ ");
+            String line = scanner.nextLine();
+            if (!cmd.run(line)) break;
+        }
+    }
 
 
 }

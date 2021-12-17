@@ -1,11 +1,13 @@
-package xyz.wagyourtail.launcher.minecraft.profile;
+package xyz.wagyourtail.launcher.minecraft.version;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.minecraft.LibraryManager;
 import xyz.wagyourtail.launcher.minecraft.data.VersionManifest;
+import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import xyz.wagyourtail.util.OSUtils;
 import xyz.wagyourtail.util.SemVerUtils;
 
@@ -17,34 +19,223 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public record Version(
-        Arguments arguments,
+        String id,
+        String type,
+        Version inheritsFrom,
+        Path jar,
+        long time,
+        long releaseTime,
+        int minimumLauncherVersion,
+        String mainClass,
         AssetIndex assetIndex,
         String assets,
-        int complianceLevel,
         Map<String, Download> downloads,
-        String id,
         JavaVersion javaVersion,
+        Arguments arguments,
         Library[] libraries,
         Logging logging,
-        String mainClass,
-        int minimumLauncherVersion,
-        long releaseTime,
-        long time,
-        String type
+        int complianceLevel
     ) {
 
+    public String getMainClass() throws IOException {
+        if (mainClass == null) {
+            if (inheritsFrom != null) {
+                return inheritsFrom.getMainClass();
+            }
+            throw new IOException("No main class found");
+        }
+        return mainClass;
+    }
+
+    public int getJavaMajorVersion() {
+        if (javaVersion == null) {
+            if (inheritsFrom != null) {
+                return inheritsFrom.getJavaMajorVersion();
+            } else {
+                return 8;
+            }
+        }
+        return javaVersion.majorVersion();
+    }
+
+    public String[] getJavaArgs(Launcher launcher, Profile profile, Path nativePath, String javaArgs) throws IOException {
+        String cp = getClassPath(launcher, profile);
+        String natives = nativePath.toString();
+        List<String> args = new ArrayList<>();
+        if (javaArgs != null) {
+            args.addAll(Arrays.asList(javaArgs.split(" ")));
+        }
+        if (arguments != null && arguments.jvm() != null) {
+            for (Version.Arguments.Argument arg : arguments().jvm()) {
+                if (arg.rules().length == 0) {
+                    args.addAll(List.of(arg.values()));
+                } else {
+                    if (Arrays.stream(arg.rules()).allMatch(rule -> rule.testRules(launcher))) {
+                        args.addAll(List.of(arg.values()));
+                    }
+                }
+            }
+        } else if (inheritsFrom != null) {
+            args.addAll(Arrays.asList(inheritsFrom.getJavaArgs(launcher, profile, nativePath, null)));
+        }
+        return args.stream().map(e -> e
+            .replace("${natives_directory}", natives)
+            .replace("${classpath}", cp)
+            .replace("${launcher_name}", launcher.getName())
+            .replace("${launcher_version}", launcher.getVersion())
+        ).toArray(String[]::new);
+    }
+
+    public List<Path> getLibraries(Launcher launcher, Profile profile) throws IOException {
+        List<Path> libs = new ArrayList<>();
+        if (inheritsFrom != null) {
+            libs.addAll(inheritsFrom.getLibraries(launcher, profile));
+        }
+        if (libraries != null) {
+            libs.addAll(launcher.libs.resolveAll(profile, libraries()).stream().map(Path::toAbsolutePath).toList());
+        }
+        return libs;
+    }
+
+    public String getClassPath(Launcher launcher, Profile profile) throws IOException {
+        List<String> classPath = new ArrayList<>(getLibraries(launcher, profile).stream().map(Path::toString).toList());
+
+        // Add the version's jar
+        classPath.add(resolveClientJar(launcher).toAbsolutePath().toString());
+        return String.join(":", classPath);
+    }
+
+    public Version.Download getClientDownload() throws IOException {
+        if (downloads != null) {
+            Version.Download download = downloads.get("client");
+            if (download != null) {
+                return download;
+            }
+        }
+        if (inheritsFrom != null) {
+            return inheritsFrom.getClientDownload();
+        }
+        throw new IOException("No client download found");
+    }
+
+    public Path jarPath() {
+        if (jar != null) {
+            return jar;
+        }
+        if (inheritsFrom != null) {
+            return inheritsFrom.jarPath();
+        }
+        throw new IllegalStateException("No jar path found");
+    }
+
+    public Path resolveClientJar(Launcher launcher) throws IOException {
+        Version.Download client = getClientDownload();
+
+        Path clientJar = jarPath();
+
+        if (Files.exists(clientJar)) {
+            if (Files.size(clientJar) != client.size() || !LibraryManager.shaMatch(clientJar, client.sha1())) {
+                System.out.println("Client jar is outdated, downloading new one");
+                Files.delete(clientJar);
+            }
+        }
+
+        if (!Files.exists(clientJar)) {
+            for (int i = 0; i < 3; i++) {
+                try {
+                    System.out.println("Downloading client jar");
+                    Files.createDirectories(clientJar.getParent());
+                    Path tmp = clientJar.getParent().resolve(clientJar.getFileName().toString() + ".tmp");
+                    try (InputStream stream = client.url().openStream()) {
+                        Files.write(tmp, stream.readAllBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                    }
+                    if (LibraryManager.shaMatch(tmp, client.sha1())) {
+                        Files.move(tmp, clientJar, StandardCopyOption.REPLACE_EXISTING);
+                        break;
+                    } else {
+                        throw new IOException("SHA1 mismatch");
+                    }
+                } catch (IOException e) {
+                    System.out.println("Failed to download client jar, retrying " + i + " of 3");
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        if (!Files.exists(clientJar)) {
+            throw new IOException("Failed to download client jar");
+        }
+
+        return clientJar;
+    }
+
+    public AssetIndex getAssets() throws IOException {
+        if (assetIndex != null) {
+            return assetIndex;
+        }
+        if (inheritsFrom != null) {
+            return inheritsFrom.getAssets();
+        }
+        throw new IOException("No assets found");
+    }
+
+    public String[] getGameArgs(Launcher launcher, String username, Path gameDir) throws IOException {
+        if (arguments == null || arguments.game == null) {
+            if (inheritsFrom != null) {
+                return inheritsFrom.getGameArgs(launcher, username, gameDir);
+            } else {
+                throw new IOException("No game arguments found");
+            }
+        }
+        List<String> args = new ArrayList<>();
+        for (Version.Arguments.Argument arg : arguments.game) {
+            if (arg.rules().length == 0) {
+                args.addAll(List.of(arg.values()));
+            } else {
+                if (Arrays.stream(arg.rules()).allMatch(rule -> rule.testRules(launcher))) {
+                    args.addAll(List.of(arg.values()));
+                }
+            }
+        }
+        AssetIndex assetIndex = getAssets();
+        Path assets = launcher.assets.resolveAssets(assetIndex);
+        return args.stream().map(e -> e
+            .replace("${auth_player_name}", username)
+            .replace("${version_name}", id)
+            .replace("${game_directory}", gameDir.toAbsolutePath().toString())
+            .replace("${assets_root}", assets.toString())
+            .replace("${assets_index_name}", assetIndex.id)//assetIndex.id)
+            .replace("${auth_uuid}", launcher.auth.getUUID(username).toString())
+            .replace("${auth_access_token}", launcher.auth.getToken(username))
+            .replace("${clientid}", launcher.getName())
+            .replace("${user_type}", launcher.auth.getUserType(username))
+            .replace("${version_type}", type)
+        ).toArray(String[]::new);
+    }
+
+    public String[] getLogging(Launcher launcher) throws IOException {
+        if (logging == null || logging.client == null) {
+            if (inheritsFrom != null) {
+                return inheritsFrom.getLogging(launcher);
+            } else {
+                return new String[0];
+            }
+        }
+
+        Path loggingFile = launcher.assets.resolveLogging(logging.client.file);
+
+        // Download logging file
+        return new String[] { logging.client.argument.replace("${path}", loggingFile.toAbsolutePath().toString()) };
+    }
+
     private static final Map<String, Version> resolveCache = new HashMap<>();
-
-
 
     public static Version resolve(Launcher launcher, String versionId) throws IOException {
         if (versionId.equals("latest-snapshot")) {
@@ -79,7 +270,7 @@ public record Version(
         Version version;
         // parse the version.json
         try (InputStreamReader isr = new InputStreamReader(Files.newInputStream(versionJson))) {
-            version = Version.parse(isr);
+            version = Version.parse(launcher, isr);
         }
 
         // check if outdated
@@ -93,7 +284,7 @@ public record Version(
             }
             // parse the new version.json
             try (InputStreamReader isr = new InputStreamReader(Files.newInputStream(versionJson))) {
-                version = Version.parse(isr);
+                version = Version.parse(launcher, isr);
             } catch (RuntimeException e) {
                 throw new IOException("Failed to parse version.json", e.getCause());
             }
@@ -106,7 +297,7 @@ public record Version(
         return Optional.ofNullable(json.get(key));
     }
 
-    public static Version parse(InputStreamReader isr) {
+    public static Version parse(Launcher launcher, InputStreamReader isr) throws IOException {
         JsonObject json = JsonParser.parseReader(isr).getAsJsonObject();
         Arguments arguments = null;
         if (json.has("minecraftArguments")) {
@@ -117,21 +308,35 @@ public record Version(
                 null
             );
         }
+        Version inheritsFrom = get(json, "inheritsFrom").map(JsonElement::getAsString).map(e -> {
+                try {
+                    return Version.resolve(launcher, e);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }).orElse(null);
         return new Version(
-                get(json, "arguments").map(JsonElement::getAsJsonObject).map(Arguments::parse).orElse(arguments),
+                get(json, "id").map(JsonElement::getAsString).orElseThrow(() -> new IOException("Missing id")),
+                get(json, "type").map(JsonElement::getAsString).orElse(null),
+                inheritsFrom,
+                get(json, "jar").map(JsonElement::getAsString).map(e -> launcher.minecraftPath.resolve("versions").resolve(json.get("id").getAsString()).resolve(e + ".json")).orElseGet(() -> {
+                    if (inheritsFrom != null) {
+                        return null;
+                    }
+                    return launcher.minecraftPath.resolve("versions").resolve(json.get("id").getAsString()).resolve(json.get("id").getAsString() + ".jar");
+                }),
+                get(json, "time").map(JsonElement::getAsString).map(Instant::parse).map(Instant::getEpochSecond).orElse(0L),
+                get(json, "releaseTime").map(JsonElement::getAsString).map(Instant::parse).map(Instant::getEpochSecond).orElse(0L),
+                get(json, "minimumLauncherVersion").map(JsonElement::getAsInt).orElse(0),
+                get(json, "mainClass").map(JsonElement::getAsString).orElse(null),
                 get(json, "assetIndex").map(JsonElement::getAsJsonObject).map(AssetIndex::parse).orElse(null),
                 get(json, "assets").map(JsonElement::getAsString).orElse(null),
-                get(json, "complianceLevel").map(JsonElement::getAsInt).orElse(0),
                 get(json, "downloads").map(JsonElement::getAsJsonObject).map(Download::parseAll).orElse(null),
-                get(json, "id").map(JsonElement::getAsString).orElse(null),
                 get(json, "javaVersion").map(JsonElement::getAsJsonObject).map(JavaVersion::parse).orElse(null),
-                get(json, "libraries").map(JsonElement::getAsJsonArray).map(Library::parse).orElse(null),
+                get(json, "arguments").map(JsonElement::getAsJsonObject).map(Arguments::parse).orElse(arguments),
+                get(json, "libraries").map(JsonElement::getAsJsonArray).map(Library::parse).orElse(new Library[0]),
                 get(json, "logging").map(JsonElement::getAsJsonObject).map(Logging::parse).orElse(null),
-                get(json, "mainClass").map(JsonElement::getAsString).orElse(null),
-                get(json, "minimumLauncherVersion").map(JsonElement::getAsInt).orElse(0),
-                get(json, "releaseTime").map(JsonElement::getAsString).map(Instant::parse).map(Instant::getEpochSecond).orElse(0L),
-                get(json, "time").map(JsonElement::getAsString).map(Instant::parse).map(Instant::getEpochSecond).orElse(0L),
-                get(json, "type").map(JsonElement::getAsString).orElse(null)
+                get(json, "complianceLevel").map(JsonElement::getAsInt).orElse(0)
         );
     }
 
