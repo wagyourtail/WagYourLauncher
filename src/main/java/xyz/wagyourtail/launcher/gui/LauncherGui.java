@@ -2,7 +2,7 @@ package xyz.wagyourtail.launcher.gui;
 
 import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.LogListener;
-import xyz.wagyourtail.launcher.minecraft.profile.Profile;
+import xyz.wagyourtail.launcher.minecraft.userProfile.Profile;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -14,13 +14,18 @@ public class LauncherGui extends Launcher {
     }
 
     @Override
-    public LogListener getLogger(Profile profile) {
+    public LogListener getProfileLogger(Profile userProfile) {
         return null;
     }
 
     @Override
-    public void launch(Profile profile, String username) throws IOException {
+    public void launch(Profile userProfile, String username) throws IOException {
 
+    }
+
+    @Override
+    public char[] promptKeystorePasswordAndWait(boolean isNew) throws InterruptedException {
+        return null;
     }
 
     protected void init() {

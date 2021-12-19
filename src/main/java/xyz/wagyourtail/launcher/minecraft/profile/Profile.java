@@ -1,4 +1,4 @@
-package xyz.wagyourtail.launcher.minecraft.profile;
+package xyz.wagyourtail.launcher.minecraft.userProfile;
 
 import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.LogListener;
@@ -37,7 +37,7 @@ public record Profile(
 
     public void launch(Launcher launcher, String username) throws Exception {
         Version resolvedVersion = Version.resolve(launcher, lastVersionId);
-        LogListener logger = launcher.getLogger(this);
+        LogListener logger = launcher.getProfileLogger(this);
         if (resolvedVersion == null) {
             logger.onError("Could not resolve version " + lastVersionId);
             logger.close();

@@ -4,11 +4,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.internal.JavaVersion;
 import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.minecraft.LibraryManager;
 import xyz.wagyourtail.launcher.minecraft.data.VersionManifest;
-import xyz.wagyourtail.launcher.minecraft.profile.Profile;
+import xyz.wagyourtail.launcher.minecraft.userProfile.Profile;
 import xyz.wagyourtail.util.OSUtils;
 import xyz.wagyourtail.util.SemVerUtils;
 
@@ -22,6 +21,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -66,7 +70,7 @@ public record Version(
         return javaVersion.majorVersion();
     }
 
-    public String[] getJavaArgs(Launcher launcher, Profile profile, Path nativePath, String javaArgs, String classPath) throws IOException {
+    public String[] getJavaArgs(Launcher launcher, Profile userProfile, Path nativePath, String javaArgs, String classPath) throws IOException {
         String natives = nativePath.toString();
         List<String> args = new ArrayList<>();
         if (javaArgs != null) {
@@ -90,7 +94,7 @@ public record Version(
                 }
             }
         } else if (inheritsFrom != null) {
-            args.addAll(Arrays.asList(inheritsFrom.getJavaArgs(launcher, profile, nativePath, null, classPath)));
+            args.addAll(Arrays.asList(inheritsFrom.getJavaArgs(launcher, userProfile, nativePath, null, classPath)));
         } else {
             // default args
             Arguments.Argument[] arguments = new Arguments.Argument[]{
@@ -176,19 +180,19 @@ public record Version(
         ).toArray(String[]::new);
     }
 
-    public List<Path> getLibraries(Launcher launcher, Profile profile) throws IOException {
+    public List<Path> getLibraries(Launcher launcher, Profile userProfile) throws IOException {
         List<Path> libs = new ArrayList<>();
         if (inheritsFrom != null) {
-            libs.addAll(inheritsFrom.getLibraries(launcher, profile));
+            libs.addAll(inheritsFrom.getLibraries(launcher, userProfile));
         }
         if (libraries != null) {
-            libs.addAll(launcher.libs.resolveAll(profile, libraries()).stream().map(Path::toAbsolutePath).toList());
+            libs.addAll(launcher.libs.resolveAll(userProfile, libraries()).stream().map(Path::toAbsolutePath).toList());
         }
         return libs;
     }
 
-    public String getClassPath(Launcher launcher, Profile profile) throws IOException {
-        List<String> classPath = new ArrayList<>(getLibraries(launcher, profile).stream().map(Path::toString).toList());
+    public String getClassPath(Launcher launcher, Profile userProfile) throws IOException {
+        List<String> classPath = new ArrayList<>(getLibraries(launcher, userProfile).stream().map(Path::toString).toList());
 
         // Add the version's jar
         classPath.add(resolveClientJar(launcher).toAbsolutePath().toString());
@@ -289,17 +293,24 @@ public record Version(
         }
         AssetIndex assetIndex = getAssets();
         Path assets = launcher.assets.resolveAssets(assetIndex);
-        return args.stream().map(e -> e
-            .replace("${auth_player_name}", username)
-            .replace("${version_name}", id)
-            .replace("${game_directory}", gameDir.toAbsolutePath().toString())
-            .replace("${assets_root}", assets.toString())
-            .replace("${assets_index_name}", assetIndex.id)//assetIndex.id)
-            .replace("${auth_uuid}", launcher.auth.getUUID(username).toString())
-            .replace("${auth_access_token}", launcher.auth.getToken(username))
-            .replace("${clientid}", launcher.getName())
-            .replace("${user_type}", launcher.auth.getUserType(username))
-            .replace("${version_type}", type)
+        return args.stream().map(e -> {
+                try {
+                    return e
+                        .replace("${auth_player_name}", username)
+                        .replace("${version_name}", id)
+                        .replace("${game_directory}", gameDir.toAbsolutePath().toString())
+                        .replace("${assets_root}", assets.toString())
+                        .replace("${assets_index_name}", assetIndex.id)//assetIndex.id)
+                        .replace("${auth_uuid}", launcher.auth.getUUID(username).toString())
+                        .replace("${auth_xuid", launcher.auth.getXUID(username).toString())
+                        .replace("${auth_access_token}", launcher.auth.getToken(username))
+                        .replace("${clientid}", launcher.getName())
+                        .replace("${user_type}", launcher.auth.getUserType(username))
+                        .replace("${version_type}", type);
+                } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException | InterruptedException | UnrecoverableEntryException | InvalidKeySpecException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
         ).toArray(String[]::new);
     }
 

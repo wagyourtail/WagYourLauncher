@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import xyz.wagyourtail.launcher.Launcher;
-import xyz.wagyourtail.launcher.minecraft.profile.Profile;
+import xyz.wagyourtail.launcher.minecraft.userProfile.Profile;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,20 +31,20 @@ public class ProfileManager {
         Path profilePath = launcher.minecraftPath.resolve("launcher_profiles.json");
         if (Files.exists(profilePath)) {
             for (Map.Entry<String, JsonElement> entry : JsonParser.parseString(Files.readString(profilePath)).getAsJsonObject().getAsJsonObject("profiles").entrySet()) {
-                JsonObject profile = entry.getValue().getAsJsonObject();
+                JsonObject userProfile = entry.getValue().getAsJsonObject();
                 Profile p = new Profile(
-                    get(profile, "name").map(JsonElement::getAsString).orElse(null),
-                    get(profile, "gameDir").map(e -> launcher.minecraftPath.resolve(e.getAsString())).orElse(launcher.minecraftPath),
-                    get(profile, "created").map(JsonElement::getAsString).map(Instant::parse).map(Instant::getEpochSecond).orElse(0L),
-                    get(profile, "lastUsed").map(JsonElement::getAsString).map(Instant::parse).map(Instant::getEpochSecond).orElse(0L),
-                    get(profile, "icon").map(JsonElement::getAsString).orElse(null),
-                    get(profile, "javaArgs").map(JsonElement::getAsString).orElse(null),
-                    get(profile, "javaDir").map(e -> launcher.minecraftPath.resolve(e.getAsString())).orElse(null),
-                    get(profile, "lastVersionId").map(JsonElement::getAsString).orElse(null),
-                    get(profile, "type").map(e -> Profile.Type.byId(e.getAsString())).orElse(Profile.Type.CUSTOM)
+                    get(userProfile, "name").map(JsonElement::getAsString).orElse(null),
+                    get(userProfile, "gameDir").map(e -> launcher.minecraftPath.resolve(e.getAsString())).orElse(launcher.minecraftPath),
+                    get(userProfile, "created").map(JsonElement::getAsString).map(Instant::parse).map(Instant::getEpochSecond).orElse(0L),
+                    get(userProfile, "lastUsed").map(JsonElement::getAsString).map(Instant::parse).map(Instant::getEpochSecond).orElse(0L),
+                    get(userProfile, "icon").map(JsonElement::getAsString).orElse(null),
+                    get(userProfile, "javaArgs").map(JsonElement::getAsString).orElse(null),
+                    get(userProfile, "javaDir").map(e -> launcher.minecraftPath.resolve(e.getAsString())).orElse(null),
+                    get(userProfile, "lastVersionId").map(JsonElement::getAsString).orElse(null),
+                    get(userProfile, "type").map(e -> Profile.Type.byId(e.getAsString())).orElse(Profile.Type.CUSTOM)
                 );
                 profilesById.put(entry.getKey(), p);
-                profilesByName.computeIfAbsent(profile.get("name").getAsString(), k -> new ArrayList<>()).add(new ProfileWithID(entry.getKey(), p));
+                profilesByName.computeIfAbsent(userProfile.get("name").getAsString(), k -> new ArrayList<>()).add(new ProfileWithID(entry.getKey(), p));
             }
         } else {
             write();
@@ -63,9 +63,9 @@ public class ProfileManager {
         return List.copyOf(profilesByName.get(name));
     }
 
-    public void addProfile(String id, Profile profile) {
-        profilesById.put(id, profile);
-        profilesByName.computeIfAbsent(profile.name(), k -> new ArrayList<>()).add(new ProfileWithID(id, profile));
+    public void addProfile(String id, Profile userProfile) {
+        profilesById.put(id, userProfile);
+        profilesByName.computeIfAbsent(userProfile.name(), k -> new ArrayList<>()).add(new ProfileWithID(id, userProfile));
     }
 
     public void write() throws IOException {
@@ -75,20 +75,20 @@ public class ProfileManager {
         json.add("profiles", profiles);
         for (Map.Entry<String, Profile> ep : profilesById.entrySet()) {
             Profile p = ep.getValue();
-            JsonObject profile = new JsonObject();
-            if (p.name() != null) profile.addProperty("name", p.name());
-            if (p.gameDir() != null) profile.addProperty("gameDir", p.gameDir().toAbsolutePath().toString());
-            if (p.created() != 0L) profile.addProperty("created", Instant.ofEpochSecond(p.created()).toString());
-            if (p.lastUsed() != 0L) profile.addProperty("lastUsed", Instant.ofEpochSecond(p.lastUsed()).toString());
-            if (p.icon() != null) profile.addProperty("icon", p.icon());
-            if (p.javaArgs() != null) profile.addProperty("javaArgs", p.javaArgs());
-            if (p.javaDir() != null) profile.addProperty("javaDir", p.javaDir().toAbsolutePath().toString());
-            if (p.lastVersionId() != null) profile.addProperty("lastVersionId", p.lastVersionId());
-            profile.addProperty("type", p.type().id);
-            profiles.add(ep.getKey(), profile);
+            JsonObject userProfile = new JsonObject();
+            if (p.name() != null) userProfile.addProperty("name", p.name());
+            if (p.gameDir() != null) userProfile.addProperty("gameDir", p.gameDir().toAbsolutePath().toString());
+            if (p.created() != 0L) userProfile.addProperty("created", Instant.ofEpochSecond(p.created()).toString());
+            if (p.lastUsed() != 0L) userProfile.addProperty("lastUsed", Instant.ofEpochSecond(p.lastUsed()).toString());
+            if (p.icon() != null) userProfile.addProperty("icon", p.icon());
+            if (p.javaArgs() != null) userProfile.addProperty("javaArgs", p.javaArgs());
+            if (p.javaDir() != null) userProfile.addProperty("javaDir", p.javaDir().toAbsolutePath().toString());
+            if (p.lastVersionId() != null) userProfile.addProperty("lastVersionId", p.lastVersionId());
+            userProfile.addProperty("type", p.type().id);
+            profiles.add(ep.getKey(), userProfile);
         }
         Files.writeString(profilePath, json.toString(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
     }
 
-    public record ProfileWithID(String id, Profile profile) {}
+    public record ProfileWithID(String id, Profile userProfile) {}
 }

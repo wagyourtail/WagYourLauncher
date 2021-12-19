@@ -14,28 +14,12 @@ public class CommandManager {
     public CommandManager(LauncherNoGui launcher) {
         this.launcher = launcher;
         registerCommand("help", "[command]", "Prints help info", this::help);
-        registerCommand("exit", "", "Exits the launcher", s -> false);
-        registerCommand("listProfiles", "", "Lists all profiles", s -> {
-            launcher.listProfiles();
-            return true;
-        });
-        registerCommand("launchProfile", "<profile> <username>", "Launches a profile", s -> {
-            if (s.length < 3) {
-                System.err.println("Not enough arguments");
-                return true;
-            }
-            try {
-                Main.launchProfile(launcher, s[1], s[2]);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return true;
-            }
-            return false;
-        });
+        registerCommand("exit", "", "Exits", s -> false);
     }
 
-    public void registerCommand(String name, String usage, String desc, Function<String[], Boolean> command) {
+    public CommandManager registerCommand(String name, String usage, String desc, Function<String[], Boolean> command) {
         commands.put(name, new Command(name, usage, desc, command));
+        return this;
     }
 
     public boolean run(String command) {

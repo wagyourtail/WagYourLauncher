@@ -4,16 +4,17 @@ import xyz.wagyourtail.launcher.minecraft.AssetsManager;
 import xyz.wagyourtail.launcher.minecraft.AuthManager;
 import xyz.wagyourtail.launcher.minecraft.LibraryManager;
 import xyz.wagyourtail.launcher.minecraft.ProfileManager;
-import xyz.wagyourtail.launcher.minecraft.profile.Profile;
+import xyz.wagyourtail.launcher.minecraft.userProfile.Profile;
+import xyz.wagyourtail.launcher.nogui.ConsoleLogListener;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Supplier;
 
 public abstract class Launcher {
+    protected final LogListener launcherLogs = new ConsoleLogListener();
+
     public final Path minecraftPath;
     public final ProfileManager profiles;
     public final AuthManager auth;
@@ -30,9 +31,12 @@ public abstract class Launcher {
         assets = new AssetsManager(this);
     }
 
-    public abstract LogListener getLogger(Profile profile);
+    public LogListener getLogger() {
+        return launcherLogs;
+    }
+    public abstract LogListener getProfileLogger(Profile userProfile);
 
-    public abstract void launch(Profile profile, String username) throws Exception;
+    public abstract void launch(Profile userProfile, String username) throws Exception;
 
     public Path getJavaDir(int version) throws IOException {
         //TODO: default java dirs
@@ -46,4 +50,6 @@ public abstract class Launcher {
     public String getVersion() {
         return "1.0.0";
     }
+
+    abstract public char[] promptKeystorePasswordAndWait(boolean isNew) throws InterruptedException;
 }

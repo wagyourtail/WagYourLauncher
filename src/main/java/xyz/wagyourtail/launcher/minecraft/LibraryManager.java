@@ -1,7 +1,7 @@
 package xyz.wagyourtail.launcher.minecraft;
 
 import xyz.wagyourtail.launcher.Launcher;
-import xyz.wagyourtail.launcher.minecraft.profile.Profile;
+import xyz.wagyourtail.launcher.minecraft.userProfile.Profile;
 import xyz.wagyourtail.launcher.minecraft.version.Version;
 import xyz.wagyourtail.util.OSUtils;
 
@@ -26,40 +26,40 @@ public class LibraryManager {
         this.globalLibPath = launcher.minecraftPath.resolve("libraries").toAbsolutePath();
     }
 
-    public List<Path> resolveAll(Profile profile, Version.Library[] librarys) throws IOException {
+    public List<Path> resolveAll(Profile userProfile, Version.Library[] librarys) throws IOException {
         List<Path> paths = new ArrayList<>();
         for (Version.Library library : librarys) {
-            paths.addAll(resolve(profile, library));
+            paths.addAll(resolve(userProfile, library));
         }
         return paths;
     }
 
-    public List<Path> resolve(Profile profile, Version.Library library) throws IOException {
+    public List<Path> resolve(Profile userProfile, Version.Library library) throws IOException {
         if (!Arrays.stream(library.rules()).allMatch(rule -> rule.testRules(launcher))) {
             return List.of();
         }
         List<Path> paths = new ArrayList<>();
         if (library.downloads() != null) {
             if (library.downloads().artifact() != null) {
-                paths.add(resolveArtifact(profile, library.downloads().artifact()));
+                paths.add(resolveArtifact(userProfile, library.downloads().artifact()));
             }
             if (library.natives() != null) {
                 Version.Artifact artifact = library.downloads().classifier().get(library.natives().get(OSUtils.getOSId()));
-                Path natives = resolveArtifact(profile, artifact);
+                Path natives = resolveArtifact(userProfile, artifact);
                 paths.add(natives);
                 if (library.extract() != null) {
-                    doExtract(profile, natives, library.extract());
+                    doExtract(userProfile, natives, library.extract());
                 }
             }
         } else {
-            paths.add(resolveMaven(profile, library));
+            paths.add(resolveMaven(userProfile, library));
         }
         return paths;
     }
 
-    public Path resolveArtifact(Profile profile, Version.Artifact artifact) throws IOException {
+    public Path resolveArtifact(Profile userProfile, Version.Artifact artifact) throws IOException {
         Path global = globalLibPath.resolve(artifact.path());
-        Path local = profile.gameDir().resolve("libraries").resolve(artifact.path());
+        Path local = userProfile.gameDir().resolve("libraries").resolve(artifact.path());
         // already exists and matches
         if (Files.exists(local)) {
             if (Files.size(local) == artifact.size() && shaMatch(local, artifact.sha1())) {
@@ -70,10 +70,10 @@ public class LibraryManager {
             }
         }
         if (Files.exists(global)) {
-            // if the file exists in global but doesn't match the sha store it local to the profile
+            // if the file exists in global but doesn't match the sha store it local to the userProfile
             if (Files.size(global) != artifact.size() || !shaMatch(global, artifact.sha1())) {
                 global = local;
-                System.out.println("Storing library " + global.getFileName() + " local to profile as the global didn't match the sha1 or file size");
+                System.out.println("Storing library " + global.getFileName() + " local to userProfile as the global didn't match the sha1 or file size");
             }
         }
 
@@ -106,14 +106,19 @@ public class LibraryManager {
         if (!global.equals(local)) {
             Files.createDirectories(local.getParent());
             if (!Files.exists(local)) {
-                Files.createLink(local, global);
+                if (OSUtils.getOSId().equals("windows")) {
+                    //TODO: windows doesn't support symlinks??? without admin anyway...
+                    Files.copy(global, local, StandardCopyOption.REPLACE_EXISTING);
+                } else {
+                    Files.createLink(local, global);
+                }
             }
         }
         return local;
     }
 
     //TODO: maybe these should be local only? and always try to redownload?
-    public Path resolveMaven(Profile profile, Version.Library library) throws IOException {
+    public Path resolveMaven(Profile userProfile, Version.Library library) throws IOException {
         String[] maven = library.name().split(":");
         if (maven.length < 3 || maven.length > 4) {
             throw new IOException("Invalid maven library " + library.name());
@@ -138,7 +143,7 @@ public class LibraryManager {
         Path pth = Path.of(group.replace('.', '/'), artifact, version);
         pth = classifier == null ? pth.resolve(artifact + "-" + version + "." + ext) : pth.resolve(artifact + "-" + version + "-" + classifier + "." + ext);
         Path global = globalLibPath.resolve(pth);
-        Path local = profile.gameDir().resolve("libraries").resolve(pth);
+        Path local = userProfile.gameDir().resolve("libraries").resolve(pth);
 
         // already exists
         if (Files.exists(local)) {
@@ -163,22 +168,27 @@ public class LibraryManager {
 
         Files.createDirectories(local.getParent());
         if (!Files.exists(local)) {
-            Files.createLink(local, global);
+            if (OSUtils.getOSId().equals("windows")) {
+                //TODO: windows doesn't support symlinks??? without admin anyway...
+                Files.copy(global, local, StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                Files.createLink(local, global);
+            }
         }
         return local;
     }
 
-    public void doExtract(Profile profile, Path path, Version.Extract extract) throws IOException {
+    public void doExtract(Profile userProfile, Path path, Version.Extract extract) throws IOException {
         try (FileSystem fs = FileSystems.newFileSystem(path, Map.of())) {
             for (Path pth : fs.getRootDirectories()) {
-                Files.walkFileTree(pth, new SimpleFileVisitor<Path>() {
+                Files.walkFileTree(pth, new SimpleFileVisitor<>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         Path relPath = pth.relativize(file);
                         if (Arrays.stream(extract.exclude()).anyMatch(relPath.toString()::startsWith)) {
                             return FileVisitResult.CONTINUE;
                         }
-                        Path target = profile.nativePath(launcher).resolve(relPath.toString());
+                        Path target = userProfile.nativePath(launcher).resolve(relPath.toString());
                         Files.createDirectories(target.getParent());
                         Files.copy(file, target, StandardCopyOption.REPLACE_EXISTING);
                         return FileVisitResult.CONTINUE;

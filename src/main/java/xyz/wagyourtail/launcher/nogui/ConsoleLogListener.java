@@ -11,7 +11,7 @@ public class ConsoleLogListener implements LogListener {
 
     @Override
     public void onFatal(String fatal) {
-        System.out.println(withColor(fatal, ConsoleColors.RED));
+        System.out.println(withColor(fatal, ConsoleColors.RED_BOLD));
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ConsoleLogListener implements LogListener {
         }
     }
 
-    public String withColor(String str, ConsoleColors color) {
+    public static String withColor(String str, ConsoleColors color) {
         return color.code + str + ConsoleColors.WHITE.code;
     }
 
@@ -64,7 +64,16 @@ public class ConsoleLogListener implements LogListener {
         BLUE("\033[0;34m"),
         PURPLE("\033[0;35m"),
         CYAN("\033[0;36m"),
-        GRAY("\033[0;37m");
+        GRAY("\033[0;37m"),
+
+        BLACK_BOLD("\033[1;30m"),
+        RED_BOLD("\033[1;31m"),
+        GREEN_BOLD("\033[1;32m"),
+        YELLOW_BOLD("\033[1;33m"),
+        BLUE_BOLD("\033[1;34m"),
+        PURPLE_BOLD("\033[1;35m"),
+        CYAN_BOLD("\033[1;36m"),
+        WHITE_BOLD("\033[1;37m");
 
         private final String code;
 

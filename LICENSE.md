@@ -1,3 +1,23 @@
+ADDENDUM TO FURTHER RESTRICT THE BELOW LICENSE, PLEASE READ THE FOLLOWING:
+      
+      Creating or Distributing a modified version of this software without 
+      proper minecraft authentication, commonly known as "cracking", 
+      is strictly forbidden.
+      
+      Not only would that be a violation of the Minecraft EULA, 
+      but it would also be a violation of this license and
+      doing so revokes all your rights to modify, distribute and/or use this software.
+
+
+      Definitions:
+            
+            "Proper minecraft authentication" means that the software checks that the user has a 
+            valid minecraft account as noted in the minecraft EULA 
+            (https://account.mojang.com/documents/minecraft_eula) 
+            and TOS (https://www.minecraft.net/en-us/terms).
+
+------------------------------------------------------------------------------------------------------------------------
+
 
                                  Apache License
                            Version 2.0, January 2004
@@ -187,7 +207,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright {yyyy} {name of copyright owner}
+   Copyright 2022 Wagyourtail
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

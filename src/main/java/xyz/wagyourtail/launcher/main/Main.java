@@ -3,9 +3,10 @@ package xyz.wagyourtail.launcher.main;
 import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.gui.LauncherGui;
 import xyz.wagyourtail.launcher.minecraft.ProfileManager;
-import xyz.wagyourtail.launcher.minecraft.profile.Profile;
+import xyz.wagyourtail.launcher.minecraft.userProfile.Profile;
 import xyz.wagyourtail.launcher.nogui.LauncherNoGui;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +16,7 @@ public class Main {
     public static final ArgHandler argHandler = new ArgHandler(
         // Arg, desc, length, aliases
         new ArgHandler.Arg("--help", "Prints the help message", 1, "-h"),
-        new ArgHandler.Arg("--launchProfile", "Directly launch the specified profile", 2, "-lp"),
+        new ArgHandler.Arg("--launchProfile", "Directly launch the specified userProfile", 2, "-lp"),
         new ArgHandler.Arg("--username", "The username to use when logging in", 2, "-u"),
         new ArgHandler.Arg("--nogui", "Disables the GUI", 1, "-n"),
         new ArgHandler.Arg("--path", "the path of the .minecraft folder, defaults to ./", 2, "-p")
@@ -23,8 +24,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 //        main(argHandler.parseStringArgs(args));
-            main(argHandler.parseStringArgs(new String[] {"-lp", "Baritone 1.12.2", "-u", "wagyourtail", "-n"}));
-//        main(argHandler.parseStringArgs(new String[] {"-n"}));
+//            main(argHandler.parseStringArgs(new String[] {"-lp", "Baritone 1.12.2", "-u", "wagyourtail", "-n"}));
+        main(argHandler.parseStringArgs(new String[] {"-n"}));
     }
 
     public static void main(ArgHandler.ParsedArgs args) throws Exception {
@@ -61,24 +62,23 @@ public class Main {
         if (byId.isEmpty()) {
             List<ProfileManager.ProfileWithID> byName = launcher.profiles.getProfileByName(name);
             if (byName.isEmpty()) {
-                System.out.println("No profile found with the name " + name);
-                return;
+                throw new IOException("No userProfile found with the name " + name);
             } else if (byName.size() > 1) {
                 System.out.println("Multiple profiles found with the name " + name);
                 Scanner scanner = new Scanner(System.in);
-                System.out.println("Please select a profile:");
+                System.out.println("Please select a userProfile:");
                 for (int i = 0; i < byName.size(); i++) {
                     ProfileManager.ProfileWithID prof = byName.get(i);
-                     System.out.println((i + 1) + "\t" + prof.id() + "\t" + prof.profile().name() + "\t(" + prof.profile().lastVersionId() + ")");
+                     System.out.println((i + 1) + "\t" + prof.id() + "\t" + prof.userProfile().name() + "\t(" + prof.userProfile().lastVersionId() + ")");
                 }
                 System.out.print("> ");
                 int choice = scanner.nextInt();
                 if (choice < 1 || choice > byName.size()) {
-                    System.out.println("Invalid choice");
+                    throw new IOException("Invalid choice");
                 }
-                launcher.launch(byName.get(choice - 1).profile(), username);
+                launcher.launch(byName.get(choice - 1).userProfile(), username);
             } else {
-                launcher.launch(byName.get(0).profile(), username);
+                launcher.launch(byName.get(0).userProfile(), username);
             }
         } else {
             launcher.launch(byId.get(), username);
