@@ -73,10 +73,6 @@ public class AuthManager {
         return getProfile(username).prev().access_token();
     }
 
-    public String getXUID(String username) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, InterruptedException, UnrecoverableEntryException, InvalidKeySpecException {
-        return "unknown";
-    }
-
     public String getUserType(String username) throws UnrecoverableEntryException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException {
         return getProfile(username).getPrevResult().user_type();
     }
