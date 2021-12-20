@@ -1,48 +1,48 @@
 package xyz.wagyourtail.launcher.nogui;
 
-import xyz.wagyourtail.launcher.LogListener;
+import xyz.wagyourtail.launcher.Logger;
 
-public class ConsoleLogListener implements LogListener {
+public class ConsoleLogger implements Logger {
 
     @Override
-    public void onInfo(String info) {
+    public void info(String info) {
         System.out.println(withColor(info, ConsoleColors.GRAY));
     }
 
     @Override
-    public void onFatal(String fatal) {
+    public void fatal(String fatal) {
         System.out.println(withColor(fatal, ConsoleColors.RED_BOLD));
     }
 
     @Override
-    public void onError(String error) {
+    public void error(String error) {
         System.out.println(withColor(error, ConsoleColors.RED));
     }
 
     @Override
-    public void onWarning(String warning) {
+    public void warn(String warning) {
         System.out.println(withColor(warning, ConsoleColors.YELLOW));
     }
 
     @Override
-    public void onDebug(String debug) {
+    public void debug(String debug) {
         System.out.println(withColor(debug, ConsoleColors.CYAN));
     }
 
     @Override
-    public void onTrace(String trace) {
-        System.out.println(withColor(trace, ConsoleColors.BLUE));
+    public void trace(String trace) {
+        System.out.println(withColor(trace, ConsoleColors.PURPLE));
     }
 
     @Override
     public void log(LogLevel level, String message) {
         switch (level) {
-            case INFO -> onInfo(message);
-            case FATAL -> onFatal(message);
-            case ERROR -> onError(message);
-            case WARN -> onWarning(message);
-            case DEBUG -> onDebug(message);
-            case TRACE -> onTrace(message);
+            case INFO -> info(message);
+            case FATAL -> fatal(message);
+            case ERROR -> error(message);
+            case WARN -> warn(message);
+            case DEBUG -> debug(message);
+            case TRACE -> trace(message);
         }
     }
 

@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.Logger;
 import xyz.wagyourtail.launcher.minecraft.auth.AbstractStep;
 
 import java.awt.*;
@@ -25,8 +26,8 @@ public class Step4XSTSToken extends AbstractStep<Step3XBLToken.XBLToken, Step4XS
     }
 
     @Override
-    public XSTSToken applyStep(Step3XBLToken.XBLToken prev_result) throws IOException {
-        launcher.getLogger().onInfo("Requesting XSTS token...");
+    public XSTSToken applyStep(Step3XBLToken.XBLToken prev_result, Logger logger) throws IOException {
+        logger.info("Requesting XSTS token...");
         HttpURLConnection conn = (HttpURLConnection) new URL(XSTS_URL).openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
@@ -70,11 +71,6 @@ public class Step4XSTSToken extends AbstractStep<Step3XBLToken.XBLToken, Step4XS
     }
 
     @Override
-    public XSTSToken applyStep(Step3XBLToken.XBLToken prev_result, Frame gui) {
-        return null;
-    }
-
-    @Override
     public XSTSToken fromJson(JsonObject json) throws MalformedURLException {
         Step3XBLToken.XBLToken prev = prevStep.fromJson(json.getAsJsonObject("prev"));
         return new XSTSToken(
@@ -87,11 +83,11 @@ public class Step4XSTSToken extends AbstractStep<Step3XBLToken.XBLToken, Step4XS
     }
 
     @Override
-    public XSTSToken refresh(XSTSToken result) throws IOException {
+    public XSTSToken refresh(XSTSToken result, Logger logger) throws IOException {
         if (result.expireTimeMs > System.currentTimeMillis()) {
             return result;
         }
-        return super.refresh(result);
+        return super.refresh(result, logger);
     }
 
     public record XSTSToken(Step4XSTSToken step, long expireTimeMs, String token, String userHash, Step3XBLToken.XBLToken prev) implements AbstractStep.StepResult<XSTSToken, Step3XBLToken.XBLToken> {

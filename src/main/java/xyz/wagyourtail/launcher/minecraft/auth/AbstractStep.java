@@ -2,6 +2,8 @@ package xyz.wagyourtail.launcher.minecraft.auth;
 
 import com.google.gson.JsonObject;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.Logger;
+import xyz.wagyourtail.launcher.gui.windows.login.GuiLogin;
 
 import java.awt.*;
 import java.io.IOException;
@@ -15,16 +17,10 @@ public abstract class AbstractStep<T extends AbstractStep.StepResult<?, ?>, U ex
         this.prevStep = prevStep;
     }
 
-    public abstract U applyStep(T prev_result) throws IOException;
+    public abstract U applyStep(T prev_result, Logger logger) throws IOException;
 
-    public abstract U applyStep(T prev_result, Frame gui);
-
-    public U refresh(U result) throws IOException {
-        return applyStep(prevStep.refresh((T) result.getPrevResult()));
-    }
-
-    public U refreshGui(U result, Frame gui) {
-        return applyStep(prevStep.refreshGui((T) result.getPrevResult(), gui), gui);
+    public U refresh(U result, Logger logger) throws IOException {
+        return applyStep(prevStep.refresh((T) result.getPrevResult(), logger), logger);
     }
 
     public abstract U fromJson(JsonObject json) throws MalformedURLException;

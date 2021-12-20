@@ -3,6 +3,7 @@ package xyz.wagyourtail.launcher.minecraft.auth.xbox;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.Logger;
 import xyz.wagyourtail.launcher.minecraft.auth.AbstractStep;
 import xyz.wagyourtail.launcher.minecraft.auth.MSAAuthProvider;
 
@@ -15,7 +16,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 
 public class Step2MSAToken extends AbstractStep<Step1MSACode.MSACode, Step2MSAToken.MSAToken> {
     public static final String TOKEN_URL = "https://login.live.com/oauth20_token.srf";
@@ -25,18 +25,13 @@ public class Step2MSAToken extends AbstractStep<Step1MSACode.MSACode, Step2MSATo
     }
 
     @Override
-    public MSAToken applyStep(Step1MSACode.MSACode prev_result) throws IOException {
-        launcher.getLogger().onInfo("Getting MSA Token...");
+    public MSAToken applyStep(Step1MSACode.MSACode prev_result, Logger logger) throws IOException {
+        logger.info("Getting MSA Token...");
         return apply(prev_result.getResult().code(), "authorization_code", prev_result);
     }
 
     @Override
-    public MSAToken applyStep(Step1MSACode.MSACode prev_result, Frame gui) {
-        throw new AssertionError("Unimplemented");
-    }
-
-    @Override
-    public MSAToken refresh(MSAToken result) throws IOException {
+    public MSAToken refresh(MSAToken result, Logger logger) throws IOException {
         if (result.expireTimeMs() > System.currentTimeMillis()) {
             return result;
         }

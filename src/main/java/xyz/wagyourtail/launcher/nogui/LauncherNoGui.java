@@ -1,10 +1,10 @@
 package xyz.wagyourtail.launcher.nogui;
 
 import xyz.wagyourtail.launcher.Launcher;
-import xyz.wagyourtail.launcher.LogListener;
+import xyz.wagyourtail.launcher.Logger;
 import xyz.wagyourtail.launcher.main.Main;
 import xyz.wagyourtail.launcher.minecraft.auth.common.GetProfile;
-import xyz.wagyourtail.launcher.minecraft.userProfile.Profile;
+import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 
 import java.io.Console;
 import java.io.IOException;
@@ -25,16 +25,16 @@ public class LauncherNoGui extends Launcher {
     }
 
     @Override
-    public LogListener getProfileLogger(Profile userProfile) {
-        return new ConsoleLogListener();
+    public Logger getProfileLogger(Profile userProfile) {
+        return new ConsoleLogger();
     }
 
     @Override
-    public void launch(Profile userProfile, String username) throws Exception {
+    public void launch(Profile profile, String username, boolean offline) throws Exception {
         if (!auth.isRegistered(username)) {
             throw new IOException("User " + username + " is not logged in!");
         }
-        userProfile.launch(this, username);
+        profile.launch(this, username, offline);
     }
 
     @Override
@@ -135,7 +135,7 @@ public class LauncherNoGui extends Launcher {
                 while (true) {
                     synchronized (System.err) {
                         try {
-                            System.err.wait(500);
+                            System.err.wait(200);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -151,7 +151,7 @@ public class LauncherNoGui extends Launcher {
                 while (true) {
                     synchronized (System.err) {
                         try {
-                            System.err.wait(500);
+                            System.err.wait(200);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -162,7 +162,7 @@ public class LauncherNoGui extends Launcher {
                 }
                 return true;
             })
-            .registerCommand("launchProfile", "<profile> <username>", "Launches a profile", s -> {
+            .registerCommand("launch", "<profile> <username>", "Launches a profile", s -> {
                 if (s.length < 3) {
                     System.err.println("Not enough arguments");
                     return true;
@@ -179,7 +179,7 @@ public class LauncherNoGui extends Launcher {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             synchronized (System.err) {
-                System.err.wait(500);
+                System.err.wait(200);
             }
             System.out.print("$ ");
             String line = scanner.nextLine();

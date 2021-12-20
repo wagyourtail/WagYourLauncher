@@ -2,6 +2,9 @@ package xyz.wagyourtail.launcher.minecraft.auth.xbox;
 
 import com.google.gson.JsonObject;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.Logger;
+import xyz.wagyourtail.launcher.gui.component.logging.LoggingTextArea;
+import xyz.wagyourtail.launcher.gui.windows.login.GuiLogin;
 import xyz.wagyourtail.launcher.minecraft.auth.AbstractStep;
 import xyz.wagyourtail.launcher.minecraft.auth.MSAAuthProvider;
 
@@ -26,30 +29,24 @@ public class Step1MSACode extends AbstractStep<AbstractStep.StepResult<?, ?>, St
     }
 
     @Override
-    public MSACode applyStep(StepResult<?, ?> prev_result) {
-        launcher.getLogger().onInfo("Waiting for login...");
+    public MSACode applyStep(StepResult<?, ?> prev_result, Logger logger) {
+        logger.info("Waiting for login...");
         CompletableFuture<String> code = startServer();
-        launcher.getLogger().onInfo("If the following URL doesn't open, please copy and paste it into your browser.");
-        launcher.getLogger().onInfo(getAuthURL());
+        logger.info("If the following URL doesn't open, please copy and paste it into your browser.");
+        if (logger instanceof LoggingTextArea) {
+            logger.info("<a href=\"" + getAuthURL() + "\">" + getAuthURL() + "</a>");
+        } else {
+            logger.info(getAuthURL());
+        }
         tryWebBrowserOpen();
         timeoutServer(code);
         return new MSACode(this, code.join());
     }
 
-    @Override
-    public MSACode applyStep(StepResult<?, ?> prev_result, Frame gui) {
-        //TODO: implement
-        throw new AssertionError("Not implemented");
-    }
 
     @Override
-    public MSACode refresh(MSACode result) {
-        return this.applyStep(result.getPrevResult());
-    }
-
-    @Override
-    public MSACode refreshGui(MSACode result, Frame gui) {
-        return this.applyStep(result.getPrevResult(), gui);
+    public MSACode refresh(MSACode result, Logger logger) {
+        return this.applyStep(result.getPrevResult(), logger);
     }
 
     @Override
@@ -61,7 +58,6 @@ public class Step1MSACode extends AbstractStep<AbstractStep.StepResult<?, ?>, St
         return CompletableFuture.supplyAsync(() -> {
             // open server socket
             try (ServerSocket serverSocket = new ServerSocket(REDIRECT_PORT)) {
-                launcher.getLogger().onInfo("Waiting for login...");
                 try (Socket socket = serverSocket.accept()) {
                     Scanner scanner = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
                     String GET = scanner.nextLine();

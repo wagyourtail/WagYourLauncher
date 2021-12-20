@@ -3,6 +3,7 @@ package xyz.wagyourtail.launcher.minecraft.auth.xbox;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.Logger;
 import xyz.wagyourtail.launcher.minecraft.auth.AbstractStep;
 
 import java.awt.*;
@@ -23,8 +24,8 @@ public class Step3XBLToken extends AbstractStep<Step2MSAToken.MSAToken, Step3XBL
     }
 
     @Override
-    public XBLToken applyStep(Step2MSAToken.MSAToken prev_result) throws IOException {
-        launcher.getLogger().onInfo("Authenticating with Xbox Live...");
+    public XBLToken applyStep(Step2MSAToken.MSAToken prev_result, Logger logger) throws IOException {
+        logger.info("Authenticating with Xbox Live...");
         HttpURLConnection conn = (HttpURLConnection) new URL(XBL_URL).openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
@@ -67,11 +68,6 @@ public class Step3XBLToken extends AbstractStep<Step2MSAToken.MSAToken, Step3XBL
     }
 
     @Override
-    public XBLToken applyStep(Step2MSAToken.MSAToken prev_result, Frame gui) {
-        return null;
-    }
-
-    @Override
     public XBLToken fromJson(JsonObject json) throws MalformedURLException {
         Step2MSAToken.MSAToken token = prevStep.fromJson(json.getAsJsonObject("prev"));
         return new XBLToken(
@@ -84,11 +80,11 @@ public class Step3XBLToken extends AbstractStep<Step2MSAToken.MSAToken, Step3XBL
     }
 
     @Override
-    public XBLToken refresh(XBLToken result) throws IOException {
+    public XBLToken refresh(XBLToken result, Logger logger) throws IOException {
         if (result.expireTimeMs > System.currentTimeMillis()) {
             return result;
         }
-        return super.refresh(result);
+        return super.refresh(result, logger);
     }
 
     public record XBLToken(Step3XBLToken step, long expireTimeMs, String token, String userHash, Step2MSAToken.MSAToken prev) implements AbstractStep.StepResult<XBLToken, Step2MSAToken.MSAToken> {

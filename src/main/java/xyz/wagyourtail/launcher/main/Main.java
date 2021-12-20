@@ -2,8 +2,7 @@ package xyz.wagyourtail.launcher.main;
 
 import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.gui.LauncherGui;
-import xyz.wagyourtail.launcher.minecraft.ProfileManager;
-import xyz.wagyourtail.launcher.minecraft.userProfile.Profile;
+import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import xyz.wagyourtail.launcher.nogui.LauncherNoGui;
 
 import java.io.IOException;
@@ -16,16 +15,16 @@ public class Main {
     public static final ArgHandler argHandler = new ArgHandler(
         // Arg, desc, length, aliases
         new ArgHandler.Arg("--help", "Prints the help message", 1, "-h"),
-        new ArgHandler.Arg("--launchProfile", "Directly launch the specified userProfile", 2, "-lp"),
+        new ArgHandler.Arg("--launch", "Directly launch the specified userProfile", 2, "-lp"),
         new ArgHandler.Arg("--username", "The username to use when logging in", 2, "-u"),
         new ArgHandler.Arg("--nogui", "Disables the GUI", 1, "-n"),
         new ArgHandler.Arg("--path", "the path of the .minecraft folder, defaults to ./", 2, "-p")
     );
 
     public static void main(String[] args) throws Exception {
-//        main(argHandler.parseStringArgs(args));
+        main(argHandler.parseStringArgs(args));
 //            main(argHandler.parseStringArgs(new String[] {"-lp", "Baritone 1.12.2", "-u", "wagyourtail", "-n"}));
-        main(argHandler.parseStringArgs(new String[] {"-n"}));
+//        main(argHandler.parseStringArgs(new String[] {"-n"}));
     }
 
     public static void main(ArgHandler.ParsedArgs args) throws Exception {
@@ -34,8 +33,8 @@ public class Main {
             return;
         }
         Path path = args.get("--path").map(e -> Path.of(e[1])).orElse(Path.of("./"));
-        if (args.has("--launchProfile")) {
-            String profileName = args.get("--launchProfile").get()[1];
+        if (args.has("--launch")) {
+            String profileName = args.get("--launch").get()[1];
             String username = args.get("--username").orElseThrow(() -> new IllegalArgumentException("No username specified"))[1];
             Launcher launcher;
             if (args.has("--nogui")) {
@@ -44,10 +43,6 @@ public class Main {
                 launcher = new LauncherGui(path);
             }
             launchProfile(launcher, profileName, username);
-            return;
-        }
-        if (args.has("--listProfiles")) {
-            new LauncherNoGui(path).listProfiles();
             return;
         }
         if (args.has("--nogui")) {
@@ -60,28 +55,28 @@ public class Main {
     public static void launchProfile(Launcher launcher, String name, String username) throws Exception {
         Optional<Profile> byId = launcher.profiles.getProfileById(name);
         if (byId.isEmpty()) {
-            List<ProfileManager.ProfileWithID> byName = launcher.profiles.getProfileByName(name);
+            List<Profile> byName = launcher.profiles.getProfileByName(name);
             if (byName.isEmpty()) {
                 throw new IOException("No userProfile found with the name " + name);
             } else if (byName.size() > 1) {
-                System.out.println("Multiple profiles found with the name " + name);
+                launcher.getLogger().info("Multiple profiles found with the name " + name);
                 Scanner scanner = new Scanner(System.in);
                 System.out.println("Please select a userProfile:");
                 for (int i = 0; i < byName.size(); i++) {
-                    ProfileManager.ProfileWithID prof = byName.get(i);
-                     System.out.println((i + 1) + "\t" + prof.id() + "\t" + prof.userProfile().name() + "\t(" + prof.userProfile().lastVersionId() + ")");
+                    Profile prof = byName.get(i);
+                    launcher.getLogger().info((i + 1) + "\t" + prof.key() + "\t" + prof.name() + "\t(" + prof.lastVersionId() + ")");
                 }
                 System.out.print("> ");
                 int choice = scanner.nextInt();
                 if (choice < 1 || choice > byName.size()) {
                     throw new IOException("Invalid choice");
                 }
-                launcher.launch(byName.get(choice - 1).userProfile(), username);
+                launcher.launch(byName.get(choice - 1), username, false);
             } else {
-                launcher.launch(byName.get(0).userProfile(), username);
+                launcher.launch(byName.get(0), username, false);
             }
         } else {
-            launcher.launch(byId.get(), username);
+            launcher.launch(byId.get(), username, false);
         }
     }
 }

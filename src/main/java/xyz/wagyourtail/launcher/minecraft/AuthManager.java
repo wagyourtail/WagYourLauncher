@@ -70,11 +70,11 @@ public class AuthManager {
     }
 
     public String getToken(String username) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, InterruptedException, UnrecoverableEntryException, InvalidKeySpecException {
-        return getProfile(username).prev().access_token();
+        return getProfile(username, false).prev().access_token();
     }
 
-    public String getUserType(String username) throws UnrecoverableEntryException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException {
-        return getProfile(username).getPrevResult().user_type();
+    public String getUserType(String username, boolean offline) throws UnrecoverableEntryException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException {
+        return getProfile(username, offline).getPrevResult().user_type();
     }
 
     private KeyStore getKeyStore() throws InterruptedException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
@@ -95,9 +95,9 @@ public class AuthManager {
                     } catch (IOException e) {
                         keyStorePass = null;
                         if (i != 2) {
-                            launcher.getLogger().onInfo("Keystore password incorrect! Please try again.");
+                            launcher.getLogger().info("Keystore password incorrect! Please try again.");
                         } else {
-                            launcher.getLogger().onInfo("Keystore password incorrect! throwing exception.");
+                            launcher.getLogger().info("Keystore password incorrect! throwing exception.");
                             throw new IOException("Keystore corrupted or password incorrect!", e);
                         }
                     }
@@ -128,7 +128,7 @@ public class AuthManager {
         return new String(val);
     }
 
-    protected GetProfile.MCProfile getProfile(String username) throws IOException, InterruptedException, UnrecoverableEntryException, CertificateException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public GetProfile.MCProfile getProfile(String username, boolean offline) throws IOException, InterruptedException, UnrecoverableEntryException, CertificateException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (lastUsedCache != null && lastUsedCache.name().equals(username)) {
             return lastUsedCache;
         }
@@ -136,7 +136,7 @@ public class AuthManager {
             try {
                 JsonObject json = JsonParser.parseString(getKey(username)).getAsJsonObject();
                 for (BaseAuthProvider provider : authProviders.values()) {
-                    GetProfile.MCProfile profile = launcher instanceof LauncherGui ? provider.resolveProfileGui(json) : provider.resolveProfile(json);
+                    GetProfile.MCProfile profile = launcher instanceof LauncherGui ? provider.resolveProfileGui(json, offline) : provider.resolveProfile(json, offline);
                     if (profile != null) {
                         lastUsedCache = profile;
                         return profile;

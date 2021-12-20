@@ -3,6 +3,7 @@ package xyz.wagyourtail.launcher.minecraft.auth.common;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.Logger;
 import xyz.wagyourtail.launcher.minecraft.auth.AbstractStep;
 import xyz.wagyourtail.launcher.minecraft.auth.xbox.Step5MCToken;
 
@@ -24,18 +25,13 @@ public class GetProfile extends AbstractStep<MCToken, GetProfile.MCProfile> {
     }
 
     @Override
-    public MCProfile applyStep(MCToken prev_result) throws IOException {
-        JsonObject json = getProfile(prev_result);
+    public MCProfile applyStep(MCToken prev_result, Logger logger) throws IOException {
+        JsonObject json = getProfile(prev_result, logger);
         return getProfile(json, prev_result);
     }
 
-    @Override
-    public MCProfile applyStep(MCToken prev_result, Frame gui) {
-        return null;
-    }
-
-    public JsonObject getProfile(MCToken prev_result) throws IOException {
-        launcher.getLogger().onInfo("Getting profile...");
+    public JsonObject getProfile(MCToken prev_result, Logger logger) throws IOException {
+        logger.info("Getting profile...");
         HttpURLConnection conn = (HttpURLConnection) new URL(MINECRAFT_PROFILE_URL).openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Authorization", prev_result.token_type() + " " + prev_result.access_token());

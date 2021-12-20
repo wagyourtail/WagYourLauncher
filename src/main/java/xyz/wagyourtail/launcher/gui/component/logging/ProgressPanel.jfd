@@ -1,0 +1,52 @@
+JFDML JFormDesigner: "7.0.5.2.410" Java: "11.0.13" encoding: "UTF-8"
+
+new FormModel {
+	"i18n.autoExternalize": true
+	"i18n.bundlePackage": "lang"
+	"i18n.bundleName": "lang"
+	"i18n.keyPrefix": "ProgressPanel"
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
+			"hgap": 5
+			"vgap": 5
+		} ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				add( new FormComponent( "javax.swing.JTextPane" ) {
+					name: "textPane1"
+					"editable": false
+					"contentType": "text/html"
+					"autoscrolls": false
+					auxiliary() {
+						"JavaCodeGenerator.customCreateCode": "new LoggingTextArea(scrollPane1);"
+					}
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+				"axis": 0
+			} ) {
+				name: "panel1"
+				add( new FormComponent( "javax.swing.JProgressBar" ) {
+					name: "progressBar"
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 1
+					}
+					addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "progressBarStateChanged", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": new FormMessage( null, "ProgressPanel.label1.text" )
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "South"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 95 )
+			"size": new java.awt.Dimension( 400, 300 )
+		} )
+	}
+}

@@ -7,7 +7,7 @@ import com.google.gson.JsonParser;
 import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.minecraft.LibraryManager;
 import xyz.wagyourtail.launcher.minecraft.data.VersionManifest;
-import xyz.wagyourtail.launcher.minecraft.userProfile.Profile;
+import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import xyz.wagyourtail.util.OSUtils;
 import xyz.wagyourtail.util.SemVerUtils;
 
@@ -273,10 +273,10 @@ public record Version(
         throw new IOException("No assets found");
     }
 
-    public String[] getGameArgs(Launcher launcher, String username, Path gameDir) throws IOException {
+    public String[] getGameArgs(Launcher launcher, String username, Path gameDir, boolean offline) throws IOException {
         if (arguments == null || arguments.game == null) {
             if (inheritsFrom != null) {
-                return inheritsFrom.getGameArgs(launcher, username, gameDir);
+                return inheritsFrom.getGameArgs(launcher, username, gameDir, offline);
             } else {
                 throw new IOException("No game arguments found");
             }
@@ -303,9 +303,9 @@ public record Version(
                         .replace("${assets_index_name}", assetIndex.id)//assetIndex.id)
                         .replace("${auth_uuid}", launcher.auth.getUUID(username).toString().replace("-", ""))
                         .replace("${auth_xuid}", "")
-                        .replace("${auth_access_token}", launcher.auth.getToken(username))
+                        .replace("${auth_access_token}", offline ? "" : launcher.auth.getToken(username))
                         .replace("${clientid}", launcher.getName())
-                        .replace("${user_type}", launcher.auth.getUserType(username))
+                        .replace("${user_type}", launcher.auth.getUserType(username, offline))
                         .replace("${version_type}", type);
                 } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException | InterruptedException | UnrecoverableEntryException | InvalidKeySpecException ex) {
                     throw new RuntimeException(ex);

@@ -31,7 +31,7 @@ public class AssetsManager {
         Path index = dir.resolve("indexes").resolve(assetIndex.id() + ".json");
         if (Files.exists(index)) {
             if (Files.size(index) != assetIndex.size() || !LibraryManager.shaMatch(index, assetIndex.sha1())) {
-                System.out.println("Assets index \"" + assetIndex.id() + "\" doesn't match!");
+                launcher.getLogger().warn("Assets index \"" + assetIndex.id() + "\" doesn't match!");
                 Files.delete(index);
             } else {
                 return dir;
@@ -55,7 +55,6 @@ public class AssetsManager {
                         throw new IOException("SHA1 doesn't match!");
                     }
                 } catch (IOException e) {
-                    System.out.println("Failed to download assets index \"" + assetIndex.id() + "\"!");
                     e.printStackTrace();
                 }
             }
@@ -81,7 +80,7 @@ public class AssetsManager {
                 Path assetPath = keyDir.resolve(hash.substring(0, 2)).resolve(hash);
                 if (Files.exists(assetPath)) {
                     if (Files.size(assetPath) != asset.getValue().getAsJsonObject().get("size").getAsLong() || !LibraryManager.shaMatch(assetPath, hash)) {
-                        System.out.println("Asset \"" + key + "\" \"" + asset.getKey() + "\" doesn't match!");
+                        launcher.getLogger().warn("Asset \"" + key + "\" \"" + asset.getKey() + "\" doesn't match!");
                         Files.delete(assetPath);
                     } else {
                         continue;

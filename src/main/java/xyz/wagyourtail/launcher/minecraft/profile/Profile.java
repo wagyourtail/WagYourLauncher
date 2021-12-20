@@ -1,7 +1,9 @@
-package xyz.wagyourtail.launcher.minecraft.userProfile;
+package xyz.wagyourtail.launcher.minecraft.profile;
 
+import com.google.gson.JsonObject;
 import xyz.wagyourtail.launcher.Launcher;
-import xyz.wagyourtail.launcher.LogListener;
+import xyz.wagyourtail.launcher.Logger;
+import xyz.wagyourtail.launcher.gui.component.logging.LoggingTextArea;
 import xyz.wagyourtail.launcher.minecraft.version.Version;
 
 import javax.xml.stream.XMLInputFactory;
@@ -15,15 +17,13 @@ import java.io.SequenceInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public record Profile(
+        String key,
         String name,
         Path gameDir,
         long created,
@@ -35,15 +35,46 @@ public record Profile(
         Type type
     ) {
 
-    public void launch(Launcher launcher, String username) throws Exception {
+    @Override
+    public String toString() {
+        if (name == null || name.equals("")) {
+            return key;
+        }
+        return name;
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty("name", name);
+        json.addProperty("gameDir", gameDir.toString());
+        json.addProperty("created", Instant.ofEpochMilli(created).toString());
+        json.addProperty("lastUsed", Instant.ofEpochMilli(lastUsed).toString());
+        json.addProperty("icon", icon);
+        json.addProperty("javaArgs", javaArgs);
+        json.addProperty("javaDir", javaDir.toString());
+        json.addProperty("lastVersionId", lastVersionId);
+        json.addProperty("type", type.id);
+        return json;
+    }
+
+    public static Set<Profile> runningLock = new HashSet<>();
+
+    public void launch(Launcher launcher, String username, boolean offline) throws Exception {
+        if (runningLock.contains(this)) {
+            throw new Exception("Already running");
+        }
+        runningLock.add(this);
         Version resolvedVersion = Version.resolve(launcher, lastVersionId);
-        LogListener logger = launcher.getProfileLogger(this);
+        Logger logger = launcher.getProfileLogger(this);
+        if (logger instanceof LoggingTextArea) {
+            ((LoggingTextArea) logger).clear();
+        }
         if (resolvedVersion == null) {
-            logger.onError("Could not resolve version " + lastVersionId);
+            logger.error("Could not resolve version " + lastVersionId);
             logger.close();
             return;
         }
-        logger.onInfo("Launching " + resolvedVersion.id() + "\n");
+        logger.info("Launching " + resolvedVersion.id() + "\n");
         /*
          /usr/lib/jvm/java-17-graalvm/bin/java
                 -Xss1M
@@ -77,9 +108,8 @@ public record Profile(
         args.add(getJavaDir(launcher));
         args.addAll(Arrays.asList(resolvedVersion.getJavaArgs(launcher, this, nativePath(launcher), javaArgs, resolvedVersion.getClassPath(launcher, this))));
         args.addAll(Arrays.asList(resolvedVersion.getLogging(launcher)));
-        //TODO: add logging for -Dlog4j.configurationFile fix
         args.add(resolvedVersion.getMainClass());
-        args.addAll(Arrays.asList(resolvedVersion.getGameArgs(launcher, username, gameDir)));
+        args.addAll(Arrays.asList(resolvedVersion.getGameArgs(launcher, username, gameDir, offline)));
 
         System.out.println("Launching with args: " + String.join(" ", args).replaceAll("--accessToken [^ ]+", "--accessToken ***"));
 
@@ -93,6 +123,7 @@ public record Profile(
 //                e.printStackTrace();
 //            }
 //        }).start();
+        p.onExit().thenRun(() -> runningLock.remove(this));
         new Thread(() -> {
             try {
                 p.getErrorStream().transferTo(new OutputStream() {
@@ -100,7 +131,7 @@ public record Profile(
                     @Override
                     public void write(int b) throws IOException {
                         if (b == '\n') {
-                            logger.onError(line);
+                            logger.error(line);
                             line = "";
                         } else {
                             line += (char) b;
@@ -130,9 +161,7 @@ public record Profile(
         }
     }
 
-
-
-    public void pipeOutput(Launcher launcher, Process p, LogListener logger) {
+    public void pipeOutput(Launcher launcher, Process p, Logger logger) {
         Thread t = new Thread(() -> {
             XMLStreamReader reader = null;
             AtomicBoolean end = new AtomicBoolean(false);
@@ -145,13 +174,13 @@ public record Profile(
                     end.set(true);
                     if (logger != null) {
                         if (pr.exitValue() == 0) {
-                            logger.onInfo("Minecraft exited successfully (exit code " + pr.exitValue() + ")");
+                            logger.info("Minecraft exited successfully (exit code " + pr.exitValue() + ")");
                         } else {
-                            logger.onError("Minecraft exited with error (exit code " + pr.exitValue() + ")");
+                            logger.error("Minecraft exited with error (exit code " + pr.exitValue() + ")");
                         }
                     }
                 });
-                LogListener.LogLevel level = LogListener.LogLevel.INFO;
+                Logger.LogLevel level = Logger.LogLevel.INFO;
                 String time = "";
                 String thread = "";
                 while (!end.get()) {
@@ -159,7 +188,7 @@ public record Profile(
                         reader.next();
                         if (reader.getEventType() == XMLStreamConstants.START_ELEMENT) {
                             if (reader.getLocalName().equals("Event")) {
-                                level = LogListener.LogLevel.valueOf(reader.getAttributeValue(null, "level"));
+                                level = Logger.LogLevel.valueOf(reader.getAttributeValue(null, "level"));
                                 time = Instant.ofEpochMilli(Long.parseLong(reader.getAttributeValue(null, "timestamp"))).toString();
                                 thread = reader.getAttributeValue(null, "thread");
                             } else if (reader.getLocalName().equals("Message") || reader.getLocalName().equals("Throwable")) {
@@ -191,10 +220,6 @@ public record Profile(
             }
         });
         t.start();
-    }
-
-    public void declareNamespace(XMLStreamReader reader, String prefix, String uri) {
-
     }
 
     public enum Type {

@@ -1,8 +1,10 @@
 package xyz.wagyourtail.launcher.minecraft.auth;
 
 import com.google.gson.JsonObject;
+import xyz.wagyourtail.launcher.Logger;
 import xyz.wagyourtail.launcher.minecraft.auth.common.GetProfile;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.security.KeyStoreException;
@@ -17,9 +19,9 @@ public interface BaseAuthProvider {
     String getProviderKey();
 
     GetProfile.MCProfile displayLoginTerminal() throws IOException, UnrecoverableEntryException, CertificateException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException;
-    GetProfile.MCProfile displayLoginGui();
+    GetProfile.MCProfile withLogger(Logger logger, JProgressBar progressBar) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException;
 
-    GetProfile.MCProfile resolveProfile(JsonObject json) throws IOException;
+    GetProfile.MCProfile resolveProfile(JsonObject json, boolean offline) throws IOException;
 
-    GetProfile.MCProfile resolveProfileGui(JsonObject json) throws MalformedURLException;
+    GetProfile.MCProfile resolveProfileGui(JsonObject json, boolean offline) throws IOException;
 }

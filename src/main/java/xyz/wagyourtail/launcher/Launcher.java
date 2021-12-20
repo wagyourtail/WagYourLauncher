@@ -4,8 +4,8 @@ import xyz.wagyourtail.launcher.minecraft.AssetsManager;
 import xyz.wagyourtail.launcher.minecraft.AuthManager;
 import xyz.wagyourtail.launcher.minecraft.LibraryManager;
 import xyz.wagyourtail.launcher.minecraft.ProfileManager;
-import xyz.wagyourtail.launcher.minecraft.userProfile.Profile;
-import xyz.wagyourtail.launcher.nogui.ConsoleLogListener;
+import xyz.wagyourtail.launcher.minecraft.profile.Profile;
+import xyz.wagyourtail.launcher.nogui.ConsoleLogger;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public abstract class Launcher {
-    protected final LogListener launcherLogs = new ConsoleLogListener();
+    protected final Logger launcherLogs = new ConsoleLogger();
 
     public final Path minecraftPath;
     public final ProfileManager profiles;
@@ -31,12 +31,12 @@ public abstract class Launcher {
         assets = new AssetsManager(this);
     }
 
-    public LogListener getLogger() {
+    public Logger getLogger() {
         return launcherLogs;
     }
-    public abstract LogListener getProfileLogger(Profile userProfile);
+    public abstract Logger getProfileLogger(Profile userProfile);
 
-    public abstract void launch(Profile userProfile, String username) throws Exception;
+    public abstract void launch(Profile profile, String username, boolean offline) throws Exception;
 
     public Path getJavaDir(int version) throws IOException {
         //TODO: default java dirs

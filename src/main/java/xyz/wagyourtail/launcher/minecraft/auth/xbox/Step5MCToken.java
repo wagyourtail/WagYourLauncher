@@ -3,6 +3,7 @@ package xyz.wagyourtail.launcher.minecraft.auth.xbox;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.Logger;
 import xyz.wagyourtail.launcher.minecraft.auth.AbstractStep;
 import xyz.wagyourtail.launcher.minecraft.auth.common.MCToken;
 
@@ -11,7 +12,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Instant;
 
 public class Step5MCToken extends AbstractStep<Step4XSTSToken.XSTSToken, MCToken> {
     public static final String MINECRAFT_URL = "https://api.minecraftservices.com/authentication/login_with_xbox";
@@ -21,8 +21,8 @@ public class Step5MCToken extends AbstractStep<Step4XSTSToken.XSTSToken, MCToken
     }
 
     @Override
-    public MCToken applyStep(Step4XSTSToken.XSTSToken prev_result) throws IOException {
-        launcher.getLogger().onInfo("Authenticating with Minecraft Services...");
+    public MCToken applyStep(Step4XSTSToken.XSTSToken prev_result, Logger logger) throws IOException {
+        logger.info("Authenticating with Minecraft Services...");
         HttpURLConnection conn = (HttpURLConnection) new URL(MINECRAFT_URL).openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
@@ -60,16 +60,11 @@ public class Step5MCToken extends AbstractStep<Step4XSTSToken.XSTSToken, MCToken
     }
 
     @Override
-    public MCToken refresh(MCToken result) throws IOException {
+    public MCToken refresh(MCToken result, Logger logger) throws IOException {
         if (result.expireTime() > System.currentTimeMillis()) {
             return result;
         }
-        return super.refresh(result);
-    }
-
-    @Override
-    public MCToken applyStep(Step4XSTSToken.XSTSToken prev_result, Frame gui) {
-        return null;
+        return super.refresh(result, logger);
     }
 
     @Override
