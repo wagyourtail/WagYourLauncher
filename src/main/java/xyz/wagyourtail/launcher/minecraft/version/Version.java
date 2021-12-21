@@ -307,7 +307,10 @@ public record Version(
                         .replace("${auth_access_token}", offline ? "" : launcher.auth.getToken(logger, username))
                         .replace("${clientid}", launcher.getName())
                         .replace("${user_type}", launcher.auth.getUserType(logger, username, offline))
-                        .replace("${version_type}", type);
+                        .replace("${version_type}", type)
+                        .replace("${user_properties}", "")
+                        .replace("${user_type}", "");
+
                 } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException | InterruptedException | UnrecoverableEntryException | InvalidKeySpecException ex) {
                     throw new RuntimeException(ex);
                 }
