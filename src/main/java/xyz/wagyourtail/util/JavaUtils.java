@@ -80,7 +80,7 @@ public class JavaUtils {
     public record JavaVersion(String vendor, String arch, String version, Path path) {
         public static JavaVersion fromVersionString(String version) {
             Map<String, String> map = propertiesBuilder(version);
-            return new JavaVersion(map.get("java.vendor"), map.get("sun.arch.data.model"), map.get("java.version"), Path.of(map.get("java.home")).resolve("bin/java"));
+            return new JavaVersion(map.get("java.vendor"), map.get("sun.arch.data.model"), map.get("java.version").replace("_", "+"), Path.of(map.get("java.home")).resolve("bin/java"));
         }
     }
 

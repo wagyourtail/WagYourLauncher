@@ -50,9 +50,9 @@ public record Profile(
 
     @Override
     public String toString() {
-        if (name == null || name.equals("")) return key;
+        if (name == null || name.equals("")) return "*unnamed*" + " (" + lastVersionId + ")";
         String[] parts = name.split("/");
-        return parts[parts.length - 1];
+        return parts[parts.length - 1] + " (" + lastVersionId + ")";
     }
 
     public Path nativePath(Launcher launcher) {

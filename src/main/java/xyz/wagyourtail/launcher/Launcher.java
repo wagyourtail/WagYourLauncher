@@ -49,8 +49,13 @@ public abstract class Launcher {
         if (versions.isEmpty()) {
             throw new IOException("No Java version found");
         }
+        String verMatchString = "^" + version + ".";
+        if (version < 10) {
+            verMatchString = "~1." + version + ".";
+        }
+
         for (JavaUtils.JavaVersion v : versions) {
-            if (SemVerUtils.matches(v.version(), "^" + version + ".")) {
+            if (SemVerUtils.matches(v.version(), verMatchString)) {
                 return v.path();
             }
         }
