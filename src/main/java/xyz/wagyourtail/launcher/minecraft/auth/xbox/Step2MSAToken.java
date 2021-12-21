@@ -51,13 +51,13 @@ public class Step2MSAToken extends AbstractStep<Step1MSACode.MSACode, Step2MSATo
         sb.append("client_id=").append(MSAAuthProvider.CLIENT_ID).append("\n");
         sb.append("&scope=").append(MSAAuthProvider.SCOPES).append("\n");
         if (type.equals("refresh_token")) {
-            sb.append("&grant_type=refresh_token").append("\n");
+            sb.append("&grant_type=").append(type).append("\n");
             sb.append("&refresh_token=").append(code).append("\n");
         } else {
             sb.append("&code=").append(code).append("\n");
-            sb.append("&redirect_uri=").append(Step1MSACode.REDIRECT_URI).append("\n");
+            sb.append("&grant_type=").append(type).append("\n");
         }
-        sb.append("&grant_type=").append(type).append("\n");
+        sb.append("&redirect_uri=").append(Step1MSACode.REDIRECT_URI).append("\n");
         try (DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
             out.writeBytes(sb.toString());
         }
