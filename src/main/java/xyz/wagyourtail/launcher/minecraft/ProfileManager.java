@@ -9,6 +9,7 @@ import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.*;
@@ -78,6 +79,8 @@ public class ProfileManager {
             Profile p = ep.getValue();
             profiles.add(ep.getKey(), p.toJson());
         }
-        Files.writeString(profilePath, json.toString(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        Path tmp = profilePath.getParent().resolve(profilePath.getFileName() + ".tmp");
+        Files.writeString(tmp, json.toString(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        Files.move(tmp, profilePath, StandardCopyOption.REPLACE_EXISTING);
     }
 }

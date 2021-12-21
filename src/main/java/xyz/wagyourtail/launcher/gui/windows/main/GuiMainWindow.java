@@ -8,6 +8,7 @@ import java.awt.event.*;
 
 import xyz.wagyourtail.launcher.gui.LauncherGui;
 import xyz.wagyourtail.launcher.gui.windows.login.GuiLogin;
+import xyz.wagyourtail.launcher.gui.windows.profile.create.GuiNewProfile;
 import xyz.wagyourtail.launcher.minecraft.auth.common.GetProfile;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 
@@ -36,18 +37,19 @@ public class GuiMainWindow extends JFrame {
     private final LauncherGui launcher;
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    private JScrollPane scrollPane1;
-    private JTree profileTree;
-    private JPanel panel2;
-    private JButton launch;
-    private JButton launchoffline;
-    private JButton profileView;
     private JPanel panel3;
     private JPanel panel1;
     private JButton newProfile;
     private JPanel panel4;
     private JButton newAccount;
     private JComboBox accounts;
+    private JPanel panel5;
+    private JScrollPane scrollPane1;
+    private JTree profileTree;
+    private JPanel panel2;
+    private JButton launch;
+    private JButton launchoffline;
+    private JButton profileView;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     public GuiMainWindow(LauncherGui launcher) throws IOException {
@@ -64,64 +66,34 @@ public class GuiMainWindow extends JFrame {
         launcher.getGuiProfile(profile).setVisible(true);
     }
 
+    private void newProfile(ActionEvent e) {
+        if (launcher.newProfile == null) {
+            launcher.newProfile = new GuiNewProfile(launcher);
+        }
+        launcher.newProfile.setVisible(true);
+    }
+
     public void initComponents() throws IOException {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         ResourceBundle bundle = ResourceBundle.getBundle("lang.lang");
-        scrollPane1 = new JScrollPane();
-        profileTree = new JTree();
-        panel2 = new JPanel();
-        launch = new JButton();
-        launchoffline = new JButton();
-        profileView = new JButton();
         panel3 = new JPanel();
         panel1 = new JPanel();
         newProfile = new JButton();
         panel4 = new JPanel();
         newAccount = new JButton();
         accounts = new JComboBox();
+        panel5 = new JPanel();
+        scrollPane1 = new JScrollPane();
+        profileTree = new JTree();
+        panel2 = new JPanel();
+        launch = new JButton();
+        launchoffline = new JButton();
+        profileView = new JButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("WagYourLauncher v1.0");
         var contentPane = getContentPane();
-
-        //======== scrollPane1 ========
-        {
-
-            //---- profileTree ----
-            populateProfiles(profileTree);
-            scrollPane1.setViewportView(profileTree);
-        }
-
-        //======== panel2 ========
-        {
-            panel2.setLayout(new GridBagLayout());
-            ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0};
-            ((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {0, 0, 0, 0};
-            ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 1.0E-4};
-            ((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
-
-            //---- launch ----
-            launch.setText(bundle.getString("GuiMainWindow.launch.text"));
-            launch.addActionListener(e -> launch(e));
-            panel2.add(launch, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 5, 0), 0, 0));
-
-            //---- launchoffline ----
-            launchoffline.setText(bundle.getString("GuiMainWindow.launchoffline.text"));
-            launchoffline.addActionListener(e -> launchoffline(e));
-            panel2.add(launchoffline, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 5, 0), 0, 0));
-
-            //---- profileView ----
-            profileView.setText(bundle.getString("GuiMainWindow.profileView.text"));
-            profileView.addActionListener(e -> profileView(e));
-            panel2.add(profileView, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 0, 0), 0, 0));
-        }
 
         //======== panel3 ========
         {
@@ -133,6 +105,7 @@ public class GuiMainWindow extends JFrame {
 
                 //---- newProfile ----
                 newProfile.setText(bundle.getString("GuiMainWindow.newProfile.text"));
+                newProfile.addActionListener(e -> newProfile(e));
                 panel1.add(newProfile);
             }
             panel3.add(panel1);
@@ -153,18 +126,76 @@ public class GuiMainWindow extends JFrame {
             panel3.add(panel4);
         }
 
+        //======== panel5 ========
+        {
+
+            //======== scrollPane1 ========
+            {
+
+                //---- profileTree ----
+                populateProfiles();
+                scrollPane1.setViewportView(profileTree);
+            }
+
+            //======== panel2 ========
+            {
+                panel2.setLayout(new GridBagLayout());
+                ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0};
+                ((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {0, 0, 0, 0};
+                ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 1.0E-4};
+                ((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 1.0E-4};
+
+                //---- launch ----
+                launch.setText(bundle.getString("GuiMainWindow.launch.text"));
+                launch.addActionListener(e -> launch(e));
+                panel2.add(launch, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 0), 0, 0));
+
+                //---- launchoffline ----
+                launchoffline.setText(bundle.getString("GuiMainWindow.launchoffline.text"));
+                launchoffline.addActionListener(e -> launchoffline(e));
+                panel2.add(launchoffline, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 5, 0), 0, 0));
+
+                //---- profileView ----
+                profileView.setText(bundle.getString("GuiMainWindow.profileView.text"));
+                profileView.addActionListener(e -> profileView(e));
+                panel2.add(profileView, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
+            }
+
+            GroupLayout panel5Layout = new GroupLayout(panel5);
+            panel5.setLayout(panel5Layout);
+            panel5Layout.setHorizontalGroup(
+                panel5Layout.createParallelGroup()
+                    .addGroup(panel5Layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(panel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+            );
+            panel5Layout.setVerticalGroup(
+                panel5Layout.createParallelGroup()
+                    .addGroup(GroupLayout.Alignment.TRAILING, panel5Layout.createSequentialGroup()
+                        .addGroup(panel5Layout.createParallelGroup()
+                            .addComponent(panel2, GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+                            .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE))
+                        .addContainerGap())
+            );
+        }
+
         GroupLayout contentPaneLayout = new GroupLayout(contentPane);
         contentPane.setLayout(contentPaneLayout);
         contentPaneLayout.setHorizontalGroup(
             contentPaneLayout.createParallelGroup()
-                .addGroup(contentPaneLayout.createSequentialGroup()
-                    .addContainerGap()
+                .addGroup(GroupLayout.Alignment.TRAILING, contentPaneLayout.createSequentialGroup()
                     .addGroup(contentPaneLayout.createParallelGroup()
-                        .addGroup(contentPaneLayout.createSequentialGroup()
-                            .addComponent(scrollPane1, GroupLayout.PREFERRED_SIZE, 350, GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(panel2, GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE))
-                        .addComponent(panel3, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(panel3, GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                        .addComponent(panel5, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addContainerGap())
         );
         contentPaneLayout.setVerticalGroup(
@@ -173,9 +204,7 @@ public class GuiMainWindow extends JFrame {
                     .addContainerGap()
                     .addComponent(panel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(contentPaneLayout.createParallelGroup()
-                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
-                        .addComponent(panel2, GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
+                    .addComponent(panel5, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addContainerGap())
         );
         pack();
@@ -183,12 +212,12 @@ public class GuiMainWindow extends JFrame {
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
-    public void populateProfiles(JTree tree) throws IOException {
+    public void populateProfiles() throws IOException {
         TreeModel model = getProfileTreeModel();
-        tree.setModel(model);
+        profileTree.setModel(model);
         DefaultMutableTreeNode root = ((DefaultMutableTreeNode) model.getRoot());
         for (int i = 0; i < root.getChildCount(); i++) {
-            tree.expandPath(new TreePath(root).pathByAddingChild(root.getChildAt(i)));
+            profileTree.expandPath(new TreePath(root).pathByAddingChild(root.getChildAt(i)));
         }
     }
 
@@ -200,7 +229,7 @@ public class GuiMainWindow extends JFrame {
         DefaultMutableTreeNode other = new DefaultMutableTreeNode("Other");
 
         for (Map.Entry<String, Profile> profile : launcher.profiles.getAllProfiles().entrySet()) {
-            if (Files.isSameFile(profile.getValue().gameDir(), launcher.minecraftPath)) {
+            if (profile.getValue().gameDir().toAbsolutePath().equals(launcher.minecraftPath.toAbsolutePath())) {
                 vanilla.add(new DefaultMutableTreeNode(profile.getValue()));
             } else if (Files.isSameFile(profile.getValue().gameDir().getParent(), launcher.minecraftPath.resolve("profiles"))) {
                 wyl.add(new DefaultMutableTreeNode(profile.getValue()));
@@ -221,7 +250,7 @@ public class GuiMainWindow extends JFrame {
         return new DefaultTreeModel(root);
     }
 
-    public void populateAccounts() {
+    public void populateAccounts() throws IOException {
         DefaultComboBoxModel<AccountLabel> model = new DefaultComboBoxModel<>();
         accounts.removeAllItems();
         for (String account : launcher.auth.getRegisteredUsers().keySet()) {
@@ -232,8 +261,7 @@ public class GuiMainWindow extends JFrame {
                     continue;
                 }
             } catch (IOException | InterruptedException | UnrecoverableEntryException | CertificateException | KeyStoreException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-                e.printStackTrace();
-                continue;
+                throw new IOException(e);
             }
             BufferedImage image = null;
             try {

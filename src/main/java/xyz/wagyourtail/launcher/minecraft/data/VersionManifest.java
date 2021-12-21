@@ -10,10 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,7 +35,7 @@ public class VersionManifest {
 
     private static void populateVersions() throws IOException {
         String data = new String(getManifestURL().openStream().readAllBytes(), StandardCharsets.UTF_8);
-        versions = new HashMap<>();
+        versions = new LinkedHashMap<>();
 
         JsonObject json = JsonParser.parseString(data).getAsJsonObject();
 
@@ -55,8 +52,8 @@ public class VersionManifest {
                     version.get("id").getAsString(),
                     Type.byId(version.get("type").getAsString()),
                     new URL(get(version, "url").map(JsonElement::getAsString).orElse("")),
-                    get(version, "time").map(e -> Instant.parse(e.getAsString()).getEpochSecond()).orElse(0L),
-                    get(version, "releaseTime").map(e -> Instant.parse(e.getAsString()).getEpochSecond()).orElse(0L),
+                    get(version, "time").map(e -> Instant.parse(e.getAsString()).toEpochMilli()).orElse(0L),
+                    get(version, "releaseTime").map(e -> Instant.parse(e.getAsString()).toEpochMilli()).orElse(0L),
                     get(version, "sha1").map(JsonElement::getAsString).orElse(""),
                     get(version, "complianceLevel").map(JsonElement::getAsInt).orElse(0)
                 )
@@ -85,11 +82,19 @@ public class VersionManifest {
         return versions.get(latestSnapshot);
     }
 
+    public static Map<String, Version> getAllVersions() throws IOException {
+        if (versions == null) {
+            populateVersions();
+        }
+        return new LinkedHashMap<>(versions);
+    }
+
     public enum Type {
         RELEASE("release"),
         SNAPSHOT("snapshot"),
         OLD_BETA("old_beta"),
-        OLD_ALPHA("old_alpha");
+        OLD_ALPHA("old_alpha"),
+        EXPERIMENTAL("experimental");
 
         public final String id;
 
@@ -110,4 +115,6 @@ public class VersionManifest {
 
     public record Version(String id, Type type, URL url, long time, long releaseTime, String sha1, int complianceLevel) {}
 
+
+    // TODO: hard-code missing versions (like experiments)
 }

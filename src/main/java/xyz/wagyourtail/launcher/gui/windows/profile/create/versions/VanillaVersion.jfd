@@ -1,0 +1,75 @@
+JFDML JFormDesigner: "7.0.5.2.410" Java: "11.0.13" encoding: "UTF-8"
+
+new FormModel {
+	"i18n.autoExternalize": true
+	"i18n.bundlePackage": "lang"
+	"i18n.bundleName": "lang"
+	"i18n.keyPrefix": "VanillaVersion"
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par t {seq t {space :p:12:p, comp scrollPane1::::596:x, space u:p::p, comp panel3:::p::p, space :p:12:p}}"
+			"$verticalGroup": "par l {seq {space :::p, par l {comp panel3:::::x, comp scrollPane1::::453:x}, space :::p}}"
+		} ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+				"$horizontalGroup": "par l {comp releaseFilter::l:::x, comp snapshotFilter::l:::x, comp oldSnapshots::t::113:x, comp betas::l:::x, comp alphas::l:::x, comp experiments::l:::x, comp label2::l:::x, comp refresh::l::113:x}"
+				"$verticalGroup": "par l {seq {comp label2:::p::p, space :p:3:p, comp releaseFilter:::p::p, space :::p, comp snapshotFilter:::p::p, space :::p, comp oldSnapshots:::p::p, space :::p, comp betas:::p::p, space :::p, comp alphas:::p::p, space :::p, comp experiments:::p::p, space s:::p, comp refresh:::p::p, space ::213:x}}"
+			} ) {
+				name: "panel3"
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "snapshotFilter"
+					"text": new FormMessage( null, "VanillaVersion.snapshotFilter.text_2" )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "filterUpdated", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "releaseFilter"
+					"text": new FormMessage( null, "VanillaVersion.releaseFilter.text_2" )
+					"selected": true
+					"horizontalAlignment": 2
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "filterUpdated", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label2"
+					"text": new FormMessage( null, "VanillaVersion.label2.text_2" )
+					"horizontalAlignment": 0
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "oldSnapshots"
+					"text": new FormMessage( null, "VanillaVersion.oldSnapshots.text_2" )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "filterUpdated", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "betas"
+					"text": new FormMessage( null, "VanillaVersion.betas.text_2" )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "filterUpdated", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "alphas"
+					"text": new FormMessage( null, "VanillaVersion.alphas.text_2" )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "filterUpdated", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "experiments"
+					"text": new FormMessage( null, "VanillaVersion.experiments.text_2" )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "filterUpdated", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "refresh"
+					"text": new FormMessage( null, "VanillaVersion.refresh.text" )
+				} )
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				add( new FormComponent( "javax.swing.JTable" ) {
+					name: "vanillaTable"
+					"selectionMode": 0
+					"rowMargin": 5
+				} )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 745, 465 )
+		} )
+	}
+}

@@ -3,11 +3,13 @@ package xyz.wagyourtail.launcher.gui.component.logging;
 import xyz.wagyourtail.launcher.Logger;
 
 import javax.swing.*;
+import java.beans.JavaBean;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 
+@JavaBean
 public class LoggingTextArea extends JTextPane implements Logger {
     private static final ThreadPoolExecutor loggerExecutor = new ThreadPoolExecutor(1, 1, 0L, java.util.concurrent.TimeUnit.MILLISECONDS, new java.util.concurrent.LinkedBlockingQueue<>());
     private static final Set<LoggingTextArea> loggers = new HashSet<>();

@@ -147,7 +147,7 @@ public class AuthManager {
             } catch (NullPointerException e) {
                 registeredUsers.remove(username);
                 saveRegisteredUsers();
-                e.printStackTrace();
+                throw new IOException("Failed to parse json for " + username);
             }
         }
         return null;

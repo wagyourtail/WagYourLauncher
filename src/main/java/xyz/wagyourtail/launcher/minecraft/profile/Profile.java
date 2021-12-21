@@ -46,12 +46,12 @@ public record Profile(
     public JsonObject toJson() {
         JsonObject json = new JsonObject();
         json.addProperty("name", name);
-        json.addProperty("gameDir", gameDir.toString());
+        if (gameDir != null) json.addProperty("gameDir", gameDir.toString());
         json.addProperty("created", Instant.ofEpochMilli(created).toString());
         json.addProperty("lastUsed", Instant.ofEpochMilli(lastUsed).toString());
-        json.addProperty("icon", icon);
-        json.addProperty("javaArgs", javaArgs);
-        json.addProperty("javaDir", javaDir.toString());
+        if (icon != null) json.addProperty("icon", icon);
+        if (javaArgs != null) json.addProperty("javaArgs", javaArgs);
+        if (javaDir != null) json.addProperty("javaDir", javaDir.toString());
         json.addProperty("lastVersionId", lastVersionId);
         json.addProperty("type", type.id);
         return json;
@@ -111,7 +111,7 @@ public record Profile(
         args.add(resolvedVersion.getMainClass());
         args.addAll(Arrays.asList(resolvedVersion.getGameArgs(launcher, username, gameDir, offline)));
 
-        System.out.println("Launching with args: " + String.join(" ", args).replaceAll("--accessToken [^ ]+", "--accessToken ***"));
+        logger.info("Launching with args: " + String.join(" ", args).replaceAll("--accessToken [^ ]+", "--accessToken ***"));
 
         ProcessBuilder pb = new ProcessBuilder(args.toArray(String[]::new));
         pb.directory(gameDir.toFile());

@@ -39,16 +39,34 @@ public class SelectType extends JPanel {
         button1 = new JButton();
 
         //======== this ========
-        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
         //---- comboBox1 ----
         populateBox(comboBox1);
-        add(comboBox1);
 
         //---- button1 ----
         button1.setText(bundle.getString("SelectType.button1.text"));
         button1.addActionListener(e -> button1(e));
-        add(button1);
+
+        GroupLayout layout = new GroupLayout(this);
+        setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup()
+                .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(comboBox1, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(button1, GroupLayout.PREFERRED_SIZE, 155, GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup()
+                .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(layout.createParallelGroup()
+                        .addComponent(button1, GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
+                        .addComponent(comboBox1, GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE))
+                    .addContainerGap())
+        );
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 

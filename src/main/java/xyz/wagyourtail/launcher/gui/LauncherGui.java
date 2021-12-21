@@ -6,6 +6,7 @@ import xyz.wagyourtail.launcher.gui.windows.keystore.GuiKeystorePassword;
 import xyz.wagyourtail.launcher.gui.windows.login.GuiLogin;
 import xyz.wagyourtail.launcher.gui.windows.main.GuiMainWindow;
 import xyz.wagyourtail.launcher.gui.windows.profile.GuiProfile;
+import xyz.wagyourtail.launcher.gui.windows.profile.create.GuiNewProfile;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import xyz.wagyourtail.util.OSUtils;
 
@@ -37,6 +38,7 @@ public class LauncherGui extends Launcher {
     public GuiMainWindow mainWindow = new GuiMainWindow(this);
     public GuiLogin login;
     public GuiKeystorePassword keystorePassword;
+    public GuiNewProfile newProfile;
     public final Map<String, GuiProfile> guiProfiles = new HashMap<>();
 
     public LauncherGui(Path minecraftPath) throws IOException {
@@ -71,8 +73,8 @@ public class LauncherGui extends Launcher {
     public synchronized char[] promptKeystorePasswordAndWait(boolean isNew) {
         if (keystorePassword == null) {
             keystorePassword = new GuiKeystorePassword(isNew);
-            keystorePassword.setVisible(true);
         }
+        keystorePassword.setVisible(true);
         GuiKeystorePassword temp = keystorePassword;
         synchronized (temp) {
             try {
@@ -95,6 +97,9 @@ public class LauncherGui extends Launcher {
                 if (login != null && login.isVisible()) {
                     continue;
                 }
+                if (newProfile != null && newProfile.isVisible()) {
+                    continue;
+                }
                 if (keystorePassword != null && keystorePassword.isVisible()) {
                     continue;
                 }
@@ -112,6 +117,12 @@ public class LauncherGui extends Launcher {
     }
 
     public void openMainWindow() throws IOException {
-        mainWindow.initComponents();
+        try {
+            mainWindow.initComponents();
+        } catch (Exception e) {
+            keystorePassword.dispose();
+            mainWindow.dispose();
+            throw new IOException("Failed to open main window!", e);
+        }
     }
 }
