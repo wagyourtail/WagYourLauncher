@@ -21,7 +21,7 @@ public interface BaseAuthProvider {
     GetProfile.MCProfile displayLoginTerminal() throws IOException, UnrecoverableEntryException, CertificateException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException;
     GetProfile.MCProfile withLogger(Logger logger, JProgressBar progressBar) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException;
 
-    GetProfile.MCProfile resolveProfile(JsonObject json, boolean offline) throws IOException;
+    GetProfile.MCProfile resolveProfile(Logger logger, JsonObject json, boolean offline) throws IOException;
 
-    GetProfile.MCProfile resolveProfileGui(JsonObject json, boolean offline) throws IOException;
+    GetProfile.MCProfile resolveProfileGui(Logger logger, JsonObject json, boolean offline) throws IOException;
 }

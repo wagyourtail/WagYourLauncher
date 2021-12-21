@@ -132,7 +132,7 @@ public class VanillaVersion extends VersionSelector {
                         .addComponent(experiments)
                         .addGap(18, 18, 18)
                         .addComponent(refresh)
-                        .addContainerGap(213, Short.MAX_VALUE))
+                        .addContainerGap(54, Short.MAX_VALUE))
             );
         }
 
@@ -162,7 +162,7 @@ public class VanillaVersion extends VersionSelector {
                     .addContainerGap()
                     .addGroup(layout.createParallelGroup()
                         .addComponent(panel3, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE))
+                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
                     .addContainerGap())
         );
         // JFormDesigner - End of component initialization  //GEN-END:initComponents

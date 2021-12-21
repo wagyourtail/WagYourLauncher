@@ -6,6 +6,8 @@ import xyz.wagyourtail.launcher.minecraft.LibraryManager;
 import xyz.wagyourtail.launcher.minecraft.ProfileManager;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import xyz.wagyourtail.launcher.nogui.ConsoleLogger;
+import xyz.wagyourtail.util.JavaUtils;
+import xyz.wagyourtail.util.SemVerUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,8 +41,20 @@ public abstract class Launcher {
     public abstract void launch(Profile profile, String username, boolean offline) throws Exception;
 
     public Path getJavaDir(int version) throws IOException {
-        //TODO: default java dirs
-        throw new IOException("failed to find java dir");
+        Set<JavaUtils.JavaVersion> versions = JavaUtils.getVersions();
+        if (versions.isEmpty()) {
+            JavaUtils.refreshVersions();
+            versions = JavaUtils.getVersions();
+        }
+        if (versions.isEmpty()) {
+            throw new IOException("No Java version found");
+        }
+        for (JavaUtils.JavaVersion v : versions) {
+            if (SemVerUtils.matches(v.version(), "^" + version + ".")) {
+                return v.path();
+            }
+        }
+        throw new IOException("No Java version found matching \"^" + version + ".\"");
     }
 
     public String getName() {

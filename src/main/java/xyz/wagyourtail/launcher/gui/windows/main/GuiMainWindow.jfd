@@ -29,17 +29,13 @@
        <class>org.jdesktop.layout.GroupLayout</class>
        <void method="setProperty">
         <string>$horizontalGroup</string>
-        <string>par l {seq t {par l {comp panel3::::486:x, comp panel5:::::x}, space :::p}}</string>
+        <string>par l {seq t {par l {comp panel3::::771:x, comp panel5:::::x}, space :::p}}</string>
        </void>
        <void method="setProperty">
         <string>$verticalGroup</string>
         <string>par l {seq l {space :::p, comp panel3:::p::p, space :::p, comp panel5:::::x, space :::p}}</string>
        </void>
       </object>
-      <void method="setProperty">
-       <string>defaultCloseOperation</string>
-       <int>2</int>
-      </void>
       <void method="setProperty">
        <string>title</string>
        <string>WagYourLauncher v1.0</string>
@@ -158,11 +154,11 @@
          <class>org.jdesktop.layout.GroupLayout</class>
          <void method="setProperty">
           <string>$horizontalGroup</string>
-          <string>par l {seq l {space :p:12:p, comp scrollPane1::::345:x, space :::p, comp panel2:::p::p, space :::p}}</string>
+          <string>par l {seq l {space :p:12:p, comp scrollPane1::::630:x, space :::p, comp panel2:::p::p, space :::p}}</string>
          </void>
          <void method="setProperty">
           <string>$verticalGroup</string>
-          <string>par l {seq t {par l {comp panel2::::281:x, comp scrollPane1::::0:x}, space :::p}}</string>
+          <string>par l {seq t {par l {comp panel2::::356:x, comp scrollPane1::::0:x}, space :::p}}</string>
          </void>
         </object>
         <void property="name">
@@ -188,6 +184,14 @@
               <string>JavaCodeGenerator.postInitCode</string>
               <string>populateProfiles();</string>
              </void>
+            </void>
+            <void method="addEvent">
+             <object class="com.jformdesigner.model.FormEvent">
+              <string>javax.swing.event.TreeSelectionListener</string>
+              <string>valueChanged</string>
+              <string>profileTreeValueChanged</string>
+              <boolean>true</boolean>
+             </object>
             </void>
            </object>
           </void>
@@ -325,15 +329,15 @@
       <void method="setProperty">
        <string>location</string>
        <object class="java.awt.Point">
-        <int>265</int>
-        <int>60</int>
+        <int>205</int>
+        <int>90</int>
        </object>
       </void>
       <void method="setProperty">
        <string>size</string>
        <object class="java.awt.Dimension">
-        <int>500</int>
-        <int>395</int>
+        <int>785</int>
+        <int>470</int>
        </object>
       </void>
      </object>

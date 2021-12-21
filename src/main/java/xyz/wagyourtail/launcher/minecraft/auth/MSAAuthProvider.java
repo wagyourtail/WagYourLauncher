@@ -87,7 +87,7 @@ public class MSAAuthProvider implements BaseAuthProvider {
     }
 
     @Override
-    public GetProfile.MCProfile resolveProfile(JsonObject json, boolean offline) throws IOException {
+    public GetProfile.MCProfile resolveProfile(Logger logger, JsonObject json, boolean offline) throws IOException {
         GetProfile.MCProfile prof = profile.fromJson(json).getResult();
         // not a msa profile
         if (prof == null) {
@@ -100,7 +100,7 @@ public class MSAAuthProvider implements BaseAuthProvider {
 
         // expired
         if(System.currentTimeMillis() > prof.prev().expireTime()) {
-            launcher.getLogger().info("Profile expired, refreshing");
+            logger.info("MCProfile expired, refreshing");
             return profile.refresh(prof, launcher.getLogger()).getResult();
         }
 
@@ -109,7 +109,7 @@ public class MSAAuthProvider implements BaseAuthProvider {
     }
 
     @Override
-    public GetProfile.MCProfile resolveProfileGui(JsonObject json, boolean offline) throws IOException {
-        return resolveProfile(json, offline);
+    public GetProfile.MCProfile resolveProfileGui(Logger logger, JsonObject json, boolean offline) throws IOException {
+        return resolveProfile(logger, json, offline);
     }
 }

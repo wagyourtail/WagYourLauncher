@@ -35,12 +35,12 @@ public class MojangAuthProvider implements BaseAuthProvider {
     }
 
     @Override
-    public GetProfile.MCProfile resolveProfile(JsonObject json, boolean offline) {
+    public GetProfile.MCProfile resolveProfile(Logger logger, JsonObject json, boolean offline) {
         return null;
     }
 
     @Override
-    public GetProfile.MCProfile resolveProfileGui(JsonObject json, boolean offline) throws MalformedURLException {
+    public GetProfile.MCProfile resolveProfileGui(Logger logger, JsonObject json, boolean offline) throws MalformedURLException {
         return null;
     }
 

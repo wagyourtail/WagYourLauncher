@@ -7,6 +7,7 @@ package xyz.wagyourtail.launcher.gui.windows.profile.create;
 import java.awt.event.*;
 import javax.swing.event.*;
 import xyz.wagyourtail.launcher.gui.LauncherGui;
+import xyz.wagyourtail.launcher.gui.windows.profile.create.versions.InstalledVersion;
 import xyz.wagyourtail.launcher.gui.windows.profile.create.versions.VanillaVersion;
 import xyz.wagyourtail.launcher.gui.windows.profile.create.versions.VersionSelector;
 
@@ -26,6 +27,7 @@ public class GuiNewProfile extends JFrame {
     private JPanel contentPanel;
     private JTabbedPane tabbedPane1;
     private JPanel vanillaPanel;
+    private JPanel installedPanel;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
@@ -60,6 +62,7 @@ public class GuiNewProfile extends JFrame {
         contentPanel = new JPanel();
         tabbedPane1 = new JTabbedPane();
         vanillaPanel = new JPanel();
+        installedPanel = new JPanel();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -92,6 +95,13 @@ public class GuiNewProfile extends JFrame {
                         vanillaPanel=new VanillaVersion(this);
                     }
                     tabbedPane1.addTab(bundle.getString("GuiNewProfile.panel3.tab.title"), vanillaPanel);
+
+                    //======== installedPanel ========
+                    {
+                        installedPanel.setLayout(new GridLayout());
+                        installedPanel = new InstalledVersion(this);
+                    }
+                    tabbedPane1.addTab(bundle.getString("GuiNewProfile.panel2.tab.title"), installedPanel);
                 }
                 contentPanel.add(tabbedPane1);
             }

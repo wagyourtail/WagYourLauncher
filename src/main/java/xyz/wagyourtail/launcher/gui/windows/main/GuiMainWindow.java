@@ -4,31 +4,30 @@
 
 package xyz.wagyourtail.launcher.gui.windows.main;
 
-import java.awt.event.*;
-
 import xyz.wagyourtail.launcher.gui.LauncherGui;
 import xyz.wagyourtail.launcher.gui.windows.login.GuiLogin;
 import xyz.wagyourtail.launcher.gui.windows.profile.create.GuiNewProfile;
 import xyz.wagyourtail.launcher.minecraft.auth.common.GetProfile;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.*;
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.GroupLayout;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author wagyourtail
@@ -73,6 +72,24 @@ public class GuiMainWindow extends JFrame {
         launcher.newProfile.setVisible(true);
     }
 
+    public void profileTreeValueChanged(TreeSelectionEvent e) {
+        DefaultMutableTreeNode node = ((DefaultMutableTreeNode) profileTree.getLastSelectedPathComponent());
+        if (node == null || !(node.getUserObject() instanceof Profile profile)) {
+            profileTree.clearSelection();
+            return;
+        }
+        ResourceBundle bundle = ResourceBundle.getBundle("lang.lang");
+        launcher.getLogger().trace("Selected profile: " + profile.name());
+        if (launcher.profiles.getRunningProfiles().contains(profile)) {
+            launch.setText(bundle.getString("GuiMainWindow.kill.text"));
+            launchoffline.setText(bundle.getString("GuiMainWindow.forcekill.text"));
+        } else {
+            launch.setText(bundle.getString("GuiMainWindow.launch.text"));
+            launchoffline.setText(bundle.getString("GuiMainWindow.launchoffline.text"));
+        }
+
+    }
+
     public void initComponents() throws IOException {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         ResourceBundle bundle = ResourceBundle.getBundle("lang.lang");
@@ -91,7 +108,6 @@ public class GuiMainWindow extends JFrame {
         profileView = new JButton();
 
         //======== this ========
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("WagYourLauncher v1.0");
         var contentPane = getContentPane();
 
@@ -133,6 +149,7 @@ public class GuiMainWindow extends JFrame {
             {
 
                 //---- profileTree ----
+                profileTree.addTreeSelectionListener(e -> profileTreeValueChanged(e));
                 populateProfiles();
                 scrollPane1.setViewportView(profileTree);
             }
@@ -173,7 +190,7 @@ public class GuiMainWindow extends JFrame {
                 panel5Layout.createParallelGroup()
                     .addGroup(panel5Layout.createSequentialGroup()
                         .addGap(12, 12, 12)
-                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
+                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(panel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
@@ -182,7 +199,7 @@ public class GuiMainWindow extends JFrame {
                 panel5Layout.createParallelGroup()
                     .addGroup(GroupLayout.Alignment.TRAILING, panel5Layout.createSequentialGroup()
                         .addGroup(panel5Layout.createParallelGroup()
-                            .addComponent(panel2, GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+                            .addComponent(panel2, GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
                             .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE))
                         .addContainerGap())
             );
@@ -194,7 +211,7 @@ public class GuiMainWindow extends JFrame {
             contentPaneLayout.createParallelGroup()
                 .addGroup(GroupLayout.Alignment.TRAILING, contentPaneLayout.createSequentialGroup()
                     .addGroup(contentPaneLayout.createParallelGroup()
-                        .addComponent(panel3, GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                        .addComponent(panel3, GroupLayout.DEFAULT_SIZE, 771, Short.MAX_VALUE)
                         .addComponent(panel5, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addContainerGap())
         );
@@ -231,9 +248,11 @@ public class GuiMainWindow extends JFrame {
         for (Map.Entry<String, Profile> profile : launcher.profiles.getAllProfiles().entrySet()) {
             if (profile.getValue().gameDir().toAbsolutePath().equals(launcher.minecraftPath.toAbsolutePath())) {
                 vanilla.add(new DefaultMutableTreeNode(profile.getValue()));
-            } else if (Files.isSameFile(profile.getValue().gameDir().getParent(), launcher.minecraftPath.resolve("profiles"))) {
+            } else if (profile.getValue().gameDir().toAbsolutePath().normalize().startsWith(launcher.minecraftPath.resolve("profiles").toAbsolutePath().normalize())) {
                 wyl.add(new DefaultMutableTreeNode(profile.getValue()));
             } else {
+                launcher.getLogger().info("Profile gamedir: " + profile.getValue().gameDir().toAbsolutePath().normalize());
+                launcher.getLogger().info("Minecraft path: " + launcher.minecraftPath.toAbsolutePath().normalize());
                 other.add(new DefaultMutableTreeNode(profile.getValue()));
             }
         }
@@ -256,7 +275,7 @@ public class GuiMainWindow extends JFrame {
         for (String account : launcher.auth.getRegisteredUsers().keySet()) {
             GetProfile.MCProfile profile;
             try {
-                profile = launcher.auth.getProfile(account, true);
+                profile = launcher.auth.getProfile(launcher.getLogger(), account, true);
                 if (profile == null) {
                     continue;
                 }
@@ -286,14 +305,6 @@ public class GuiMainWindow extends JFrame {
     }
 
     private void launch(ActionEvent e) {
-        launch(false);
-    }
-
-    private void launchoffline(ActionEvent e) {
-        launch(true);
-    }
-
-    private void launch(boolean offline) {
         DefaultMutableTreeNode node = ((DefaultMutableTreeNode) profileTree.getLastSelectedPathComponent());
         if (node == null) {
             return;
@@ -302,6 +313,30 @@ public class GuiMainWindow extends JFrame {
         if (profile == null) {
             return;
         }
+        if (!launcher.profiles.getRunningProfiles().contains(profile)) {
+            launch(profile, false);
+        } else {
+            launcher.profiles.killRunning(profile);
+        }
+    }
+
+    private void launchoffline(ActionEvent e) {
+        DefaultMutableTreeNode node = ((DefaultMutableTreeNode) profileTree.getLastSelectedPathComponent());
+        if (node == null) {
+            return;
+        }
+        Profile profile = (Profile) node.getUserObject();
+        if (profile == null) {
+            return;
+        }
+        if (!launcher.profiles.getRunningProfiles().contains(profile)) {
+            launch(profile, true);
+        } else {
+            launcher.profiles.forceKillRunning(profile);
+        }
+    }
+
+    private void launch(Profile profile, boolean offline) {
         launcher.getGuiProfile(profile).launch(offline);
     }
 

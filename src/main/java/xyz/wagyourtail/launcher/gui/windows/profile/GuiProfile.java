@@ -150,10 +150,31 @@ public class GuiProfile extends JFrame {
     }
 
     public void launch(boolean offline) {
-        try {
-            launcher.launch(profile, launcher.mainWindow.getCurrentAccount().name(), offline);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        if (launcher.profiles.getRunningProfiles().contains(profile)) {
+            if (offline) {
+                launcher.profiles.forceKillRunning(profile);
+            } else {
+                launcher.profiles.killRunning(profile);
+            }
+        } else {
+            try {
+                launcher.launch(profile, launcher.mainWindow.getCurrentAccount().name(), offline);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public void updateLaunched() {
+        ResourceBundle bundle = ResourceBundle.getBundle("lang.lang");
+        if (launcher.profiles.getRunningProfiles().contains(profile)) {
+            launchBtn.setText(bundle.getString("GuiProfile.killBtn.text"));
+            launchOfflineBtn.setText(bundle.getString("GuiProfile.forceKillBtn.text"));
+            launchOfflineBtn.setEnabled(false);
+        } else {
+            launchBtn.setText(bundle.getString("GuiProfile.launchBtn.text"));
+            launchOfflineBtn.setText(bundle.getString("GuiProfile.launchOfflineBtn.text"));
+            launchOfflineBtn.setEnabled(true);
         }
     }
 

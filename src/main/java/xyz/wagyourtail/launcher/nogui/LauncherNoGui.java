@@ -34,7 +34,7 @@ public class LauncherNoGui extends Launcher {
         if (!auth.isRegistered(username)) {
             throw new IOException("User " + username + " is not logged in!");
         }
-        profile.launch(this, username, offline);
+        profiles.launch(profile, username, offline);
     }
 
     @Override

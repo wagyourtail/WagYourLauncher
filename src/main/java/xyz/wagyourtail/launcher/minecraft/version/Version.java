@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.Logger;
 import xyz.wagyourtail.launcher.minecraft.LibraryManager;
 import xyz.wagyourtail.launcher.minecraft.data.VersionManifest;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
@@ -273,10 +274,10 @@ public record Version(
         throw new IOException("No assets found");
     }
 
-    public String[] getGameArgs(Launcher launcher, String username, Path gameDir, boolean offline) throws IOException {
+    public String[] getGameArgs(Launcher launcher, Logger logger, String username, Path gameDir, boolean offline) throws IOException {
         if (arguments == null || arguments.game == null) {
             if (inheritsFrom != null) {
-                return inheritsFrom.getGameArgs(launcher, username, gameDir, offline);
+                return inheritsFrom.getGameArgs(launcher, logger, username, gameDir, offline);
             } else {
                 throw new IOException("No game arguments found");
             }
@@ -303,9 +304,9 @@ public record Version(
                         .replace("${assets_index_name}", assetIndex.id)//assetIndex.id)
                         .replace("${auth_uuid}", launcher.auth.getUUID(username).toString().replace("-", ""))
                         .replace("${auth_xuid}", "")
-                        .replace("${auth_access_token}", offline ? "" : launcher.auth.getToken(username))
+                        .replace("${auth_access_token}", offline ? "" : launcher.auth.getToken(logger, username))
                         .replace("${clientid}", launcher.getName())
-                        .replace("${user_type}", launcher.auth.getUserType(username, offline))
+                        .replace("${user_type}", launcher.auth.getUserType(logger, username, offline))
                         .replace("${version_type}", type);
                 } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException | InterruptedException | UnrecoverableEntryException | InvalidKeySpecException ex) {
                     throw new RuntimeException(ex);
@@ -419,8 +420,8 @@ public record Version(
                     }
                     return launcher.minecraftPath.resolve("versions").resolve(json.get("id").getAsString()).resolve(json.get("id").getAsString() + ".jar");
                 }),
-                get(json, "time").map(JsonElement::getAsString).map(Instant::parse).map(Instant::getEpochSecond).orElse(0L),
-                get(json, "releaseTime").map(JsonElement::getAsString).map(Instant::parse).map(Instant::getEpochSecond).orElse(0L),
+                get(json, "time").map(JsonElement::getAsString).map(Instant::parse).map(Instant::toEpochMilli).orElse(0L),
+                get(json, "releaseTime").map(JsonElement::getAsString).map(Instant::parse).map(Instant::toEpochMilli).orElse(0L),
                 get(json, "minimumLauncherVersion").map(JsonElement::getAsInt).orElse(0),
                 get(json, "mainClass").map(JsonElement::getAsString).orElse(null),
                 get(json, "assetIndex").map(JsonElement::getAsJsonObject).map(AssetIndex::parse).orElse(null),

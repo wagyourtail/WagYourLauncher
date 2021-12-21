@@ -62,7 +62,7 @@ public class LauncherGui extends Launcher {
         }
         CompletableFuture.runAsync(() -> {
             try {
-                profile.launch(this, username, offline);
+                profiles.launch(profile, username, offline);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -88,9 +88,16 @@ public class LauncherGui extends Launcher {
 
     protected void init() throws IOException {
         openMainWindow();
+
+        // auto kill when windows closed
         new Thread(() -> {
             while (true) {
                 Thread.yield();
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 if (mainWindow != null && mainWindow.isVisible()) {
                     continue;
                 }
@@ -111,7 +118,24 @@ public class LauncherGui extends Launcher {
                     }
                 }
                 //else
-                if (flag) System.exit(0);
+                if (flag) {
+                    if (mainWindow != null) {
+                        mainWindow.dispose();
+                    }
+                    if (login != null) {
+                        login.dispose();
+                    }
+                    if (newProfile != null) {
+                        newProfile.dispose();
+                    }
+                    if (keystorePassword != null) {
+                        keystorePassword.dispose();
+                    }
+                    for (GuiProfile guiProfile : guiProfiles.values()) {
+                        guiProfile.dispose();
+                    }
+                    System.exit(0);
+                }
             }
         }).start();
     }

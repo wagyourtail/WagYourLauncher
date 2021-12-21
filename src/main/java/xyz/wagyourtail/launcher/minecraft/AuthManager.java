@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.Logger;
 import xyz.wagyourtail.launcher.gui.LauncherGui;
 import xyz.wagyourtail.launcher.minecraft.auth.BaseAuthProvider;
 import xyz.wagyourtail.launcher.minecraft.auth.MSAAuthProvider;
@@ -69,12 +70,12 @@ public class AuthManager {
         return registeredUsers.get(username);
     }
 
-    public String getToken(String username) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, InterruptedException, UnrecoverableEntryException, InvalidKeySpecException {
-        return getProfile(username, false).prev().access_token();
+    public String getToken(Logger logger, String username) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, InterruptedException, UnrecoverableEntryException, InvalidKeySpecException {
+        return getProfile(logger, username, false).prev().access_token();
     }
 
-    public String getUserType(String username, boolean offline) throws UnrecoverableEntryException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException {
-        return getProfile(username, offline).getPrevResult().user_type();
+    public String getUserType(Logger logger, String username, boolean offline) throws UnrecoverableEntryException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException {
+        return getProfile(logger, username, offline).getPrevResult().user_type();
     }
 
     private KeyStore getKeyStore() throws InterruptedException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
@@ -128,7 +129,7 @@ public class AuthManager {
         return new String(val);
     }
 
-    public GetProfile.MCProfile getProfile(String username, boolean offline) throws IOException, InterruptedException, UnrecoverableEntryException, CertificateException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public GetProfile.MCProfile getProfile(Logger logger, String username, boolean offline) throws IOException, InterruptedException, UnrecoverableEntryException, CertificateException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (lastUsedCache != null && lastUsedCache.name().equals(username)) {
             return lastUsedCache;
         }
@@ -136,7 +137,7 @@ public class AuthManager {
             try {
                 JsonObject json = JsonParser.parseString(getKey(username)).getAsJsonObject();
                 for (BaseAuthProvider provider : authProviders.values()) {
-                    GetProfile.MCProfile profile = launcher instanceof LauncherGui ? provider.resolveProfileGui(json, offline) : provider.resolveProfile(json, offline);
+                    GetProfile.MCProfile profile = launcher instanceof LauncherGui ? provider.resolveProfileGui(logger, json, offline) : provider.resolveProfile(logger, json, offline);
                     if (profile != null) {
                         lastUsedCache = profile;
                         return profile;

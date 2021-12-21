@@ -3,7 +3,17 @@ package xyz.wagyourtail.util;
 public class OSUtils {
 
     public static String getOSId() {
-        return System.getProperty("os.name").toLowerCase();
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.contains("darwin") || osName.contains("mac")) {
+            return "osx";
+        }
+        if (osName.contains("win")) {
+            return "windows";
+        }
+        if (osName.contains("nux")) {
+            return "linux";
+        }
+        return "unknown";
     }
 
     public static String getOsVersion() {
