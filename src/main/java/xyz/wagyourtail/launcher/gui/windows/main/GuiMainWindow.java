@@ -26,8 +26,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author wagyourtail
@@ -245,11 +245,35 @@ public class GuiMainWindow extends JFrame {
         DefaultMutableTreeNode wyl = new DefaultMutableTreeNode("WagYourLauncher");
         DefaultMutableTreeNode other = new DefaultMutableTreeNode("Other");
 
-        for (Map.Entry<String, Profile> profile : launcher.profiles.getAllProfiles().entrySet()) {
+        List<Map.Entry<String, Profile>> sortedProfiles = new ArrayList<>(launcher.profiles.getAllProfiles().entrySet());
+        sortedProfiles.sort(Comparator.comparing(a -> a.getValue().name()));
+
+        for (Map.Entry<String, Profile> profile : sortedProfiles) {
             if (profile.getValue().gameDir().toAbsolutePath().equals(launcher.minecraftPath.toAbsolutePath())) {
                 vanilla.add(new DefaultMutableTreeNode(profile.getValue()));
             } else if (profile.getValue().gameDir().toAbsolutePath().normalize().startsWith(launcher.minecraftPath.resolve("profiles").toAbsolutePath().normalize())) {
-                wyl.add(new DefaultMutableTreeNode(profile.getValue()));
+                DefaultMutableTreeNode node = wyl;
+                if (profile.getValue().name() != null) {
+                    String[] parts = profile.getValue().name().split("/");
+                    for (int i = 0; i < parts.length - 1; i++) {
+                        boolean flag = true;
+                        for (int j = 0; j < node.getChildCount(); j++) {
+                            if (node.getChildAt(j).equals(parts[i])) {
+                                node = (DefaultMutableTreeNode) node.getChildAt(j);
+                                flag = false;
+                                break;
+                            }
+                        }
+                        //else
+                        if (flag) {
+                            DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(parts[i]);
+                            node.add(newNode);
+                            node = newNode;
+                        }
+                    }
+                }
+
+                node.add(new DefaultMutableTreeNode(profile.getValue()));
             } else {
                 launcher.getLogger().info("Profile gamedir: " + profile.getValue().gameDir().toAbsolutePath().normalize());
                 launcher.getLogger().info("Minecraft path: " + launcher.minecraftPath.toAbsolutePath().normalize());
@@ -272,7 +296,9 @@ public class GuiMainWindow extends JFrame {
     public void populateAccounts() throws IOException {
         DefaultComboBoxModel<AccountLabel> model = new DefaultComboBoxModel<>();
         accounts.removeAllItems();
-        for (String account : launcher.auth.getRegisteredUsers().keySet()) {
+        List<String> sortedAccounts = new ArrayList<>(launcher.auth.getRegisteredUsers().keySet());
+        sortedAccounts.sort(String::compareToIgnoreCase);
+        for (String account : sortedAccounts) {
             GetProfile.MCProfile profile;
             try {
                 profile = launcher.auth.getProfile(launcher.getLogger(), account, true);

@@ -51,7 +51,8 @@ public record Profile(
     @Override
     public String toString() {
         if (name == null || name.equals("")) return key;
-        return name;
+        String[] parts = name.split("/");
+        return parts[parts.length - 1];
     }
 
     public Path nativePath(Launcher launcher) {
