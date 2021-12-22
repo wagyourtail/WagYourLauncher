@@ -22,6 +22,7 @@ public class LauncherGui extends Launcher {
     static {
         if (OSUtils.getOSId().equals("linux")) {
             try {
+                // set to gtk even if not on gnome
                 UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -64,6 +65,7 @@ public class LauncherGui extends Launcher {
             try {
                 profiles.launch(profile, username, offline);
             } catch (Exception e) {
+                JOptionPane.showMessageDialog(mainWindow, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
         });

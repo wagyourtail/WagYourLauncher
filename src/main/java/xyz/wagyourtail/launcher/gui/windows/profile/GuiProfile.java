@@ -160,6 +160,7 @@ public class GuiProfile extends JFrame {
             try {
                 launcher.launch(profile, launcher.mainWindow.getCurrentAccount().name(), offline);
             } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 ex.printStackTrace();
             }
         }

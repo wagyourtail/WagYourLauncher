@@ -25,11 +25,13 @@ public abstract class VersionSelector extends JPanel {
         String id = UUID.randomUUID().toString();
         String name = parent.getProfileName();
 
-        Path gameDir = parent.launcher.minecraftPath.resolve("profiles").resolve(name);
 
-        int i = 0;
+        Path parentDir = parent.launcher.minecraftPath.resolve("profiles");
+        Path gameDir = parentDir.resolve(name.isEmpty() ? "_0" : name);
+
+        int i = 1;
         while (Files.exists(gameDir)) {
-            gameDir = gameDir.getParent().resolve(name + "_" + i);
+            gameDir = gameDir.getParent().resolve(name + "_" + i++);
         }
 
         parent.launcher.profiles.addProfile(id, new Profile(
@@ -46,8 +48,14 @@ public abstract class VersionSelector extends JPanel {
         ));
         try {
             parent.launcher.profiles.write();
-            parent.launcher.mainWindow.populateProfiles();
+            try {
+                parent.launcher.mainWindow.populateProfiles();
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(parent, "Failed to populate profiles", "Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
         } catch (IOException e) {
+            JOptionPane.showMessageDialog(parent, "Failed to write profiles.json", "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }

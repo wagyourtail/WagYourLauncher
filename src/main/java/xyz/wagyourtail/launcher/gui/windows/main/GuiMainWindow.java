@@ -275,8 +275,8 @@ public class GuiMainWindow extends JFrame {
 
                 node.add(new DefaultMutableTreeNode(profile.getValue()));
             } else {
-                launcher.getLogger().info("Profile gamedir: " + profile.getValue().gameDir().toAbsolutePath().normalize());
-                launcher.getLogger().info("Minecraft path: " + launcher.minecraftPath.toAbsolutePath().normalize());
+//                launcher.getLogger().info("Profile gamedir: " + profile.getValue().gameDir().toAbsolutePath().normalize());
+//                launcher.getLogger().info("Minecraft path: " + launcher.minecraftPath.toAbsolutePath().normalize());
                 other.add(new DefaultMutableTreeNode(profile.getValue()));
             }
         }

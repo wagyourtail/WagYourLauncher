@@ -230,7 +230,7 @@ public record Version(
 
         if (Files.exists(clientJar)) {
             if (Files.size(clientJar) != client.size() || !LibraryManager.shaMatch(clientJar, client.sha1())) {
-                System.out.println("Client jar is outdated, downloading new one");
+                launcher.getLogger().warn("Client jar is outdated, downloading new one");
                 Files.delete(clientJar);
             }
         }
@@ -238,7 +238,7 @@ public record Version(
         if (!Files.exists(clientJar)) {
             for (int i = 0; i < 3; i++) {
                 try {
-                    System.out.println("Downloading client jar");
+                    launcher.getLogger().trace("Downloading client jar");
                     Files.createDirectories(clientJar.getParent());
                     Path tmp = clientJar.getParent().resolve(clientJar.getFileName().toString() + ".tmp");
                     try (InputStream stream = client.url().openStream()) {
@@ -251,7 +251,7 @@ public record Version(
                         throw new IOException("SHA1 mismatch");
                     }
                 } catch (IOException e) {
-                    System.out.println("Failed to download client jar, retrying " + i + " of 3");
+                    launcher.getLogger().warn("Failed to download client jar, retrying " + i + " of 3");
                     e.printStackTrace();
                 }
             }

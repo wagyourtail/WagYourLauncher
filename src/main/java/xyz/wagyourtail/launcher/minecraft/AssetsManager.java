@@ -42,7 +42,7 @@ public class AssetsManager {
             // 3 tries
             for (int i = 0; i < 3; i++) {
                 try {
-                    System.out.println("Downloading assets index \"" + assetIndex.id() + "\"...");
+                    launcher.getLogger().trace("Downloading assets index \"" + assetIndex.id() + "\"...");
                     Files.createDirectories(index.getParent());
                     Path tmp = index.getParent().resolve(index.getFileName() + ".tmp");
                     try (InputStream stream = assetIndex.url().openStream()) {
@@ -90,7 +90,7 @@ public class AssetsManager {
                 if (!Files.exists(assetPath)) {
                     for (int i = 0; i < 3; i++) {
                         try {
-                            System.out.println("Downloading asset \"" + key + ":" + asset.getKey() + "\"...");
+                            launcher.getLogger().trace("Downloading asset \"" + key + ":" + asset.getKey() + "\"...");
                             Path tmp = assetPath.getParent().resolve(assetPath.getFileName() + ".tmp");
                             Files.createDirectories(tmp.getParent());
                             try (InputStream stream = new URL(ASSET_BASE_URL + hash.substring(0, 2) + "/" + hash).openStream()) {
@@ -103,7 +103,7 @@ public class AssetsManager {
                                 throw new IOException("SHA1 doesn't match!");
                             }
                         } catch (IOException e) {
-                            System.out.println("Failed to download asset \"" + key + ":" + asset.getKey() + "\"!");
+                            launcher.getLogger().warn("Failed to download asset \"" + key + ":" + asset.getKey() + "\"!" + " (" + (i + 1) + "/3)");
                             e.printStackTrace();
                         }
                     }
@@ -120,7 +120,7 @@ public class AssetsManager {
         Path path = dir.resolve("log_configs").resolve(file.id());
         if (Files.exists(path)) {
             if (Files.size(path) != file.size() || !LibraryManager.shaMatch(path, file.sha1())) {
-                System.out.println("Logging config \"" + file.id() + "\" doesn't match!");
+                launcher.getLogger().warn("Logging config \"" + file.id() + "\" doesn't match!");
                 Files.delete(path);
             } else {
                 return path;
@@ -130,7 +130,7 @@ public class AssetsManager {
         if (!Files.exists(path)) {
             for (int i = 0; i < 3; i++) {
                 try {
-                    System.out.println("Downloading logging config \"" + file.id() + "\"...");
+                    launcher.getLogger().trace("Downloading logging config \"" + file.id() + "\"...");
                     Path tmp = path.getParent().resolve(path.getFileName() + ".tmp");
                     Files.createDirectories(tmp.getParent());
                     try (InputStream stream = file.url().openStream()) {
@@ -142,7 +142,7 @@ public class AssetsManager {
                         throw new IOException("SHA1 doesn't match!");
                     }
                 } catch (IOException e) {
-                    System.out.println("Failed to download logging config \"" + file.id() + "\"!");
+                    launcher.getLogger().warn("Failed to download logging config \"" + file.id() + "\"!" + " (" + (i + 1) + "/3)");
                     e.printStackTrace();
                 }
             }

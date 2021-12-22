@@ -41,7 +41,7 @@ public class LauncherNoGui extends Launcher {
     public char[] promptKeystorePasswordAndWait(boolean isNew) {
         Console console = System.console();
         if (console == null) {
-            System.out.println("No console available, using insecure scanner... (run with java, not javaw)");
+            launcherLogs.warn("No console available, using insecure scanner... (run with java, not javaw)");
         } else {
             return console.readPassword("Enter keystore password: ");
         }
@@ -52,31 +52,31 @@ public class LauncherNoGui extends Launcher {
     }
 
     public void listProfiles() {
-        System.out.println("Profiles:");
+        launcherLogs.info("Profiles:");
         int[] tableSizes = new int[3];
         for (Map.Entry<String, Profile> entry : profiles.getAllProfiles().entrySet()) {
             tableSizes[0] = Math.max(tableSizes[0], entry.getKey().length());
             tableSizes[1] = Math.max(tableSizes[1], entry.getValue().name().length());
             tableSizes[2] = Math.max(tableSizes[2], entry.getValue().lastVersionId().length());
         }
-        System.out.println("\t" + rPadTo("id", tableSizes[0]) + "\t" + rPadTo("name", tableSizes[1]) + "\t" + rPadTo("(version)", tableSizes[2]));
-        System.out.println(dashes(tableSizes[0] + tableSizes[1] + tableSizes[2] + 12));
+        launcherLogs.info("\t" + rPadTo("id", tableSizes[0]) + "\t" + rPadTo("name", tableSizes[1]) + "\t" + rPadTo("(version)", tableSizes[2]));
+        launcherLogs.info(dashes(tableSizes[0] + tableSizes[1] + tableSizes[2] + 12));
         for (Map.Entry<String, Profile> prof : profiles.getAllProfiles().entrySet()) {
-            System.out.println("\t" + rPadTo(prof.getKey(), tableSizes[0]) + "\t" + rPadTo(prof.getValue().name(), tableSizes[1]) + "\t" + rPadTo(prof.getValue().lastVersionId(), tableSizes[2]));
+            launcherLogs.info("\t" + rPadTo(prof.getKey(), tableSizes[0]) + "\t" + rPadTo(prof.getValue().name(), tableSizes[1]) + "\t" + rPadTo(prof.getValue().lastVersionId(), tableSizes[2]));
         }
     }
 
     public void listUsers() {
-        System.out.println("Users:");
+        launcherLogs.info("Users:");
         int[] tableSizes = new int[2];
         for (Map.Entry<String, UUID> stringUUIDEntry : auth.getRegisteredUsers().entrySet()) {
             tableSizes[0] = Math.max(tableSizes[0], stringUUIDEntry.getKey().length());
             tableSizes[1] = Math.max(tableSizes[1], stringUUIDEntry.getValue().toString().length());
         }
-        System.out.println("\t" + rPadTo("username", tableSizes[0]) + "\t" + rPadTo("uuid", tableSizes[1]));
-        System.out.println(dashes(tableSizes[0] + tableSizes[1] + 12));
+        launcherLogs.info("\t" + rPadTo("username", tableSizes[0]) + "\t" + rPadTo("uuid", tableSizes[1]));
+        launcherLogs.info(dashes(tableSizes[0] + tableSizes[1] + 12));
         for (Map.Entry<String, UUID> stringUUIDEntry : auth.getRegisteredUsers().entrySet()) {
-            System.out.println("\t" + rPadTo(stringUUIDEntry.getKey(), tableSizes[0]) + "\t" + rPadTo(stringUUIDEntry.getValue().toString(), tableSizes[1]));
+            launcherLogs.info("\t" + rPadTo(stringUUIDEntry.getKey(), tableSizes[0]) + "\t" + rPadTo(stringUUIDEntry.getValue().toString(), tableSizes[1]));
         }
     }
 
@@ -103,26 +103,26 @@ public class LauncherNoGui extends Launcher {
                 return true;
             })
             .registerCommand("listauth", "", "List available auth methods", (args) -> {
-                System.out.println("Available auth methods:");
+                launcherLogs.info("Available auth methods:");
                 for (String s : auth.authProviders.keySet()) {
-                    System.out.println("\t" + s);
+                    launcherLogs.info("\t" + s);
                 }
                 return true;
             })
             .registerCommand("adduser", "<provider>", "Adds a user", (args) -> {
                 if (args.length != 2) {
-                    System.out.println("Usage: adduser <provider>");
+                    launcherLogs.warn("Usage: adduser <provider>");
                     return true;
                 }
                 String provider = args[1];
                 if (!auth.authProviders.containsKey(provider)) {
-                    System.out.println("Unknown auth provider: " + provider);
+                    launcherLogs.error("Unknown auth provider: " + provider);
                     return true;
                 }
                 try {
                     GetProfile.MCProfile profile = auth.authProviders.get(provider).displayLoginTerminal();
                     if (profile != null) {
-                        System.out.println("Successfully added user " + profile.name() + " (" + profile.id() + ")");
+                        launcherLogs.info("Successfully added user " + profile.name() + " (" + profile.id() + ")");
                     }
                 } catch (IOException | UnrecoverableEntryException | CertificateException | KeyStoreException | NoSuchAlgorithmException | InvalidKeySpecException | InterruptedException e) {
                     e.printStackTrace();

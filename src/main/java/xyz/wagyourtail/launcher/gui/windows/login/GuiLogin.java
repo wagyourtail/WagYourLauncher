@@ -120,6 +120,7 @@ public class GuiLogin extends JFrame {
                     launcher.login = null;
                 }
             } catch (CertificateException | IOException | KeyStoreException | NoSuchAlgorithmException | InvalidKeySpecException | InterruptedException e) {
+                JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
         });

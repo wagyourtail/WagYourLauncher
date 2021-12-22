@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ArgHandler {
-    public Map<String, Arg> args = new HashMap<>();
+    public final Map<String, Arg> args = new HashMap<>();
 
     public ArgHandler(Arg... args) {
         for (Arg arg : args) {

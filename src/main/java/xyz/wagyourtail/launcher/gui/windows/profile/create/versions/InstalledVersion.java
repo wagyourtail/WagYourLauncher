@@ -34,11 +34,7 @@ public class InstalledVersion extends VersionSelector {
     }
 
     private void filterUpdated(ActionEvent e) {
-        try {
-            updateVersions();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        init();
     }
 
     private void initComponents() {
@@ -81,6 +77,7 @@ public class InstalledVersion extends VersionSelector {
         try {
             updateVersions();
         } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
@@ -114,6 +111,10 @@ public class InstalledVersion extends VersionSelector {
 
     @Override
     public void create() {
+        if (vanillaTable.getSelectedRow() == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a version", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         Object version = vanillaTable.getModel().getValueAt(vanillaTable.getSelectedRow(), 0);
         if (version != null) {
             createVanillaProfile(version.toString());

@@ -66,14 +66,14 @@ public class LibraryManager {
                 return local;
             } else {
                 Files.delete(local);
-                System.out.println("Deleted local library " + local.getFileName() + " because it didn't match the sha1 or file size");
+                launcher.getLogger().warn("Deleted local library " + local.getFileName() + " because it didn't match the sha1 or file size");
             }
         }
         if (Files.exists(global)) {
             // if the file exists in global but doesn't match the sha store it local to the userProfile
             if (Files.size(global) != artifact.size() || !shaMatch(global, artifact.sha1())) {
                 global = local;
-                System.out.println("Storing library " + global.getFileName() + " local to userProfile as the global didn't match the sha1 or file size");
+               launcher.getLogger().trace("Storing library " + global.getFileName() + " local to userProfile as the global didn't match the sha1 or file size");
             }
         }
 
@@ -81,7 +81,7 @@ public class LibraryManager {
             // three tries to download
             for (int i = 0; i < 3; i++) {
                 try {
-                    System.out.println("Downloading library " + global.getFileName());
+                    launcher.getLogger().trace("Downloading library " + global.getFileName());
                     Files.createDirectories(global.getParent());
                     Path tmp = global.getParent().resolve(global.getFileName() + ".tmp");
                     try (InputStream stream = artifact.url().openStream()) {
@@ -94,7 +94,7 @@ public class LibraryManager {
                         throw new IOException("SHA1 didn't match");
                     }
                 } catch (IOException e) {
-                    System.err.println("Failed to download library " + global.getFileName() + " (try " + (i + 1) + ")");
+                    launcher.getLogger().warn("Failed to download library " + global.getFileName() + " ( " + (i + 1) + "/3)");
                     e.printStackTrace();
                 }
             }
@@ -147,13 +147,13 @@ public class LibraryManager {
 
         // already exists
         if (Files.exists(local)) {
-            System.out.println("Local library for " + library.name() + " already exists, skipping");
+            launcher.getLogger().trace("Local library for " + library.name() + " already exists, skipping");
             return local;
         }
 
         if (!Files.exists(global)) {
             // download
-            System.out.println("Downloading library " + library.name());
+            launcher.getLogger().trace("Downloading library " + library.name());
             Files.createDirectories(global.getParent());
             Path tmp = global.getParent().resolve(global.getFileName() + ".tmp");
             String mavenUrl = library.url().toString();

@@ -73,15 +73,15 @@ public class LoggingTextArea extends JTextPane implements Logger {
 
     @Override
     public void fatal(String fatal) {
-        try {
-            SwingUtilities.invokeLater(() -> {
-                actual.append(this.withColor(fatal, "red")).append("<br>");
+//        try {
+            loggerExecutor.execute(() -> {
+                actual.append(this.withColor(fatal, "red", "bold")).append("<br>");
                 dirty = true;
                 //this.update(this.getGraphics());
             });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
@@ -160,6 +160,10 @@ public class LoggingTextArea extends JTextPane implements Logger {
 
     public String withColor(String message, String color) {
         return "<font color=\"" + color + "\">" + message + "</font>";
+    }
+
+    public String withColor(String message, String color, String weight) {
+        return "<font color=\"" + color + "\" weight=\"" + weight + "\">" + message + "</font>";
     }
 
 }
