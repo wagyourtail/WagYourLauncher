@@ -122,7 +122,24 @@ public class ProfileManager {
         args.add(resolved.getMainClass());
         args.addAll(Arrays.asList(resolved.getGameArgs(launcher, profileLogger, username, profile.gameDir(), offline)));
 
-        profileLogger.info("Launching with args: " + String.join(" ", args).replaceAll("--accessToken [^ ]+", "--accessToken ***"));
+        profileLogger.info("Launching with args: ");
+        boolean prevArgSensitive = false;
+        boolean prevArgCP = false;
+        for (String arg : args) {
+            if (prevArgSensitive) {
+                prevArgSensitive = false;
+                profileLogger.info("    *****");
+                continue;
+            }
+            if (prevArgCP) {
+                prevArgCP = false;
+                profileLogger.info("        " + String.join(":\n        ", arg.split(":")));
+                continue;
+            }
+            if (arg.matches("--accessToken")) prevArgSensitive = true;
+            if (arg.matches("-cp")) prevArgCP = true;
+            profileLogger.info("    " + arg);
+        }
         ProcessBuilder pb = new ProcessBuilder(args);
         pb.directory(gameDir.toFile());
         Process p = pb.start();

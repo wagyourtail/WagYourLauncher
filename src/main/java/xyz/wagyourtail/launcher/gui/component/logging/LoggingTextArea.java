@@ -40,9 +40,9 @@ public class LoggingTextArea extends JTextPane implements Logger {
         th.start();
     }
 
-    String head = "<html><body style='font-family: monospace;'>";
+    String head = "<html><body style='font-family: monospace;'><pre>";
     StringBuilder actual = new StringBuilder();
-    String tail = "</body></html>";
+    String tail = "</pre></body></html>";
     boolean dirty = false;
 
     JScrollPane scrollBar;
