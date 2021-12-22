@@ -50,11 +50,6 @@ public class MSAAuthProvider implements BaseAuthProvider {
     }
 
     @Override
-    public GetProfile.MCProfile displayLoginTerminal() throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException {
-        return withLogger(launcher.getLogger(), null);
-    }
-
-    @Override
     public GetProfile.MCProfile withLogger(Logger logger, JProgressBar progress) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException {
         if (progress != null) progress.setValue(0);
         logger.info("Logging in with Microsoft");
@@ -88,7 +83,7 @@ public class MSAAuthProvider implements BaseAuthProvider {
 
     @Override
     public GetProfile.MCProfile resolveProfile(Logger logger, JsonObject json, boolean offline) throws IOException {
-        GetProfile.MCProfile prof = profile.fromJson(json).getResult();
+        GetProfile.MCProfile prof = profile.fromJson(json);
         // not a msa profile
         if (prof == null) {
             return null;
@@ -106,10 +101,5 @@ public class MSAAuthProvider implements BaseAuthProvider {
 
         // valid
         return prof;
-    }
-
-    @Override
-    public GetProfile.MCProfile resolveProfileGui(Logger logger, JsonObject json, boolean offline) throws IOException {
-        return resolveProfile(logger, json, offline);
     }
 }

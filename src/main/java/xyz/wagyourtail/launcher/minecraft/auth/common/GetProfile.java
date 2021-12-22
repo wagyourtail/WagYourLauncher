@@ -6,6 +6,7 @@ import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.Logger;
 import xyz.wagyourtail.launcher.minecraft.auth.AbstractStep;
 import xyz.wagyourtail.launcher.minecraft.auth.xbox.Step5MCToken;
+import xyz.wagyourtail.launcher.minecraft.auth.yggdrasil.Step1Login;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -68,7 +69,7 @@ public class GetProfile extends AbstractStep<MCToken, GetProfile.MCProfile> {
 
     @Override
     public MCProfile fromJson(JsonObject json) throws MalformedURLException {
-        if (((AbstractStep)prevStep) instanceof Step5MCToken && json.getAsJsonObject("prev").getAsJsonObject("prev").has("userHash")) {
+        if (((AbstractStep)prevStep) instanceof Step5MCToken && json.getAsJsonObject("prev").get("user_type").getAsString().equals("msa")) {
             MCToken prev_result = prevStep.fromJson(json.getAsJsonObject("prev"));
             return new MCProfile(
                 this,
@@ -78,7 +79,17 @@ public class GetProfile extends AbstractStep<MCToken, GetProfile.MCProfile> {
                 prev_result
             );
         }
-        //TODO: yggdrasil
+
+        if (((AbstractStep)prevStep) instanceof Step1Login && json.getAsJsonObject("prev").get("user_type").getAsString().equals("yggdrasil")) {
+            MCToken prev_result = prevStep.fromJson(json.getAsJsonObject("prev"));
+            return new MCProfile(
+                this,
+                UUID.fromString(json.get("id").getAsString()),
+                json.get("name").getAsString(),
+                new URL(json.get("skin_url").getAsString()),
+                prev_result
+            );
+        }
 
         return null;
     }

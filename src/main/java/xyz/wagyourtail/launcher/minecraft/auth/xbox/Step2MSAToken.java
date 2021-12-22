@@ -42,6 +42,7 @@ public class Step2MSAToken extends AbstractStep<Step1MSACode.MSACode, Step2MSATo
         HttpURLConnection connection = (HttpURLConnection) new URL(TOKEN_URL).openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connection.setRequestProperty("Accept", "application/json");
         connection.setRequestProperty("User-Agent", "WagYourLauncher/1.0");
         connection.setDoOutput(true);
         connection.setDoInput(true);

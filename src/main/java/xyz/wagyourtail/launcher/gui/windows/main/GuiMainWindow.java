@@ -375,8 +375,10 @@ public class GuiMainWindow extends JFrame {
         launcher.login.setVisible(true);
     }
 
-    public GetProfile.MCProfile getCurrentAccount() {
-        return ((GuiMainWindow.AccountLabel) accounts.getSelectedItem()).profile;
+    public GetProfile.MCProfile getCurrentAccount() throws IOException {
+        AccountLabel label = ((AccountLabel) accounts.getSelectedItem());
+        if (label == null) throw new IOException("No account selected");
+        return label.profile;
     }
 
     public record AccountLabel(GetProfile.MCProfile profile, Image image) {

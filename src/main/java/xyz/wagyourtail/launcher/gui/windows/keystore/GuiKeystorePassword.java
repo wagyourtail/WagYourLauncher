@@ -64,6 +64,7 @@ public class GuiKeystorePassword extends JFrame {
         //======== this ========
         setTitle("Keystore Login");
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        setAlwaysOnTop(true);
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {

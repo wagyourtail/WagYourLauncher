@@ -120,11 +120,11 @@ public class LauncherNoGui extends Launcher {
                     return true;
                 }
                 try {
-                    GetProfile.MCProfile profile = auth.authProviders.get(provider).displayLoginTerminal();
+                    GetProfile.MCProfile profile = auth.authProviders.get(provider).withLogger(launcherLogs, null);
                     if (profile != null) {
                         launcherLogs.info("Successfully added user " + profile.name() + " (" + profile.id() + ")");
                     }
-                } catch (IOException | UnrecoverableEntryException | CertificateException | KeyStoreException | NoSuchAlgorithmException | InvalidKeySpecException | InterruptedException e) {
+                } catch (IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException | InvalidKeySpecException | InterruptedException e) {
                     e.printStackTrace();
                 }
                 return true;

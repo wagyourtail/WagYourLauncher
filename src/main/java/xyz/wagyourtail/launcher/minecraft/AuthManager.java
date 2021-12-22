@@ -6,9 +6,9 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import xyz.wagyourtail.launcher.Launcher;
 import xyz.wagyourtail.launcher.Logger;
-import xyz.wagyourtail.launcher.gui.LauncherGui;
 import xyz.wagyourtail.launcher.minecraft.auth.BaseAuthProvider;
 import xyz.wagyourtail.launcher.minecraft.auth.MSAAuthProvider;
+import xyz.wagyourtail.launcher.minecraft.auth.YggdrasilAuthProvider;
 import xyz.wagyourtail.launcher.minecraft.auth.common.GetProfile;
 
 import javax.crypto.SecretKey;
@@ -23,12 +23,10 @@ import java.nio.file.StandardOpenOption;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class AuthManager {
     public final Map<String, BaseAuthProvider> authProviders;
@@ -55,7 +53,14 @@ public class AuthManager {
             } catch (IOException ignored) {}
         }
         registeredUsers = registeredUsers1;
-        authProviders = Arrays.stream(new BaseAuthProvider[] {new MSAAuthProvider(launcher)}).collect(Collectors.toMap(BaseAuthProvider::getProviderName, Function.identity()));
+        BaseAuthProvider[] providers = new BaseAuthProvider[] {
+            new MSAAuthProvider(launcher),
+            new YggdrasilAuthProvider(launcher)
+        };
+        authProviders = new LinkedHashMap<>();
+        for (BaseAuthProvider provider : providers) {
+            authProviders.put(provider.getProviderName(), provider);
+        }
     }
 
     public boolean isRegistered(String username) {
@@ -137,7 +142,7 @@ public class AuthManager {
             try {
                 JsonObject json = JsonParser.parseString(getKey(username)).getAsJsonObject();
                 for (BaseAuthProvider provider : authProviders.values()) {
-                    GetProfile.MCProfile profile = launcher instanceof LauncherGui ? provider.resolveProfileGui(logger, json, offline) : provider.resolveProfile(logger, json, offline);
+                    GetProfile.MCProfile profile = provider.resolveProfile(logger, json, offline);
                     if (profile != null) {
                         lastUsedCache = profile;
                         return profile;
@@ -148,7 +153,7 @@ public class AuthManager {
             } catch (NullPointerException e) {
                 registeredUsers.remove(username);
                 saveRegisteredUsers();
-                throw new IOException("Failed to parse json for " + username);
+                throw new IOException("Failed to parse json for " + username, e);
             }
         }
         return null;
