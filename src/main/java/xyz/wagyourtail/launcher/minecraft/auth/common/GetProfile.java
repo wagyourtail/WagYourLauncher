@@ -69,7 +69,7 @@ public class GetProfile extends AbstractStep<MCToken, GetProfile.MCProfile> {
 
     @Override
     public MCProfile fromJson(JsonObject json) throws MalformedURLException {
-        if (((AbstractStep)prevStep) instanceof Step5MCToken && json.getAsJsonObject("prev").get("user_type").getAsString().equals("msa")) {
+        if (prevStep instanceof Step5MCToken && json.getAsJsonObject("prev").get("user_type").getAsString().equals("msa")) {
             MCToken prev_result = prevStep.fromJson(json.getAsJsonObject("prev"));
             return new MCProfile(
                 this,
@@ -80,7 +80,7 @@ public class GetProfile extends AbstractStep<MCToken, GetProfile.MCProfile> {
             );
         }
 
-        if (((AbstractStep)prevStep) instanceof Step1Login && json.getAsJsonObject("prev").get("user_type").getAsString().equals("yggdrasil")) {
+        if (prevStep instanceof Step1Login && json.getAsJsonObject("prev").get("user_type").getAsString().equals("yggdrasil")) {
             MCToken prev_result = prevStep.fromJson(json.getAsJsonObject("prev"));
             return new MCProfile(
                 this,

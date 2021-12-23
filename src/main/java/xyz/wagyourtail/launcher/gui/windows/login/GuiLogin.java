@@ -116,7 +116,6 @@ public class GuiLogin extends JFrame {
                 if (launcher.mainWindow != null) {
                     launcher.mainWindow.populateAccounts();
                     this.dispose();
-                    LoggingTextArea.removeLogger(this.getLogger());
                     launcher.login = null;
                 }
             } catch (CertificateException | IOException | KeyStoreException | NoSuchAlgorithmException | InvalidKeySpecException | InterruptedException e) {

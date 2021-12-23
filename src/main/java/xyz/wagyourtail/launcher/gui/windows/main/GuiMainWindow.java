@@ -13,10 +13,7 @@ import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -231,6 +228,7 @@ public class GuiMainWindow extends JFrame {
 
     public void populateProfiles() throws IOException {
         TreeModel model = getProfileTreeModel();
+        profileTree.setCellRenderer(new ProfileTreeCellRenderer(launcher));
         profileTree.setModel(model);
         DefaultMutableTreeNode root = ((DefaultMutableTreeNode) model.getRoot());
         for (int i = 0; i < root.getChildCount(); i++) {
@@ -390,7 +388,6 @@ public class GuiMainWindow extends JFrame {
     }
 
     public static class AccoutLabelRenderer implements ListCellRenderer<AccountLabel> {
-
         @Override
         public Component getListCellRendererComponent(JList<? extends AccountLabel> list, AccountLabel value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value == null) {
@@ -398,6 +395,25 @@ public class GuiMainWindow extends JFrame {
             }
             return new JLabel(value.toString(), new ImageIcon(value.image), JLabel.LEFT);
         }
+    }
 
+    public static class ProfileTreeCellRenderer extends DefaultTreeCellRenderer {
+        private static LauncherGui launcher;
+
+        public ProfileTreeCellRenderer(LauncherGui launcher) {
+            this.launcher = launcher;
+        }
+
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            Component component = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+            if (value instanceof DefaultMutableTreeNode node) {
+                Object userObject = node.getUserObject();
+                if (userObject instanceof Profile) {
+                    component.setForeground(Color.ORANGE);
+                }
+            }
+            return component;
+        }
     }
 }

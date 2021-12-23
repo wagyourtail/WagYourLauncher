@@ -3,47 +3,15 @@ package xyz.wagyourtail.launcher.gui.component.logging;
 import xyz.wagyourtail.launcher.Logger;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.html.HTMLDocument;
 import java.beans.JavaBean;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.io.IOException;
 
 @JavaBean
 public class LoggingTextArea extends JTextPane implements Logger {
-    private static final ThreadPoolExecutor loggerExecutor = new ThreadPoolExecutor(1, 1, 0L, java.util.concurrent.TimeUnit.MILLISECONDS, new java.util.concurrent.LinkedBlockingQueue<>());
-    private static final Set<LoggingTextArea> loggers = new HashSet<>();
 
-    static {
-        Thread th = new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    SwingUtilities.invokeAndWait(() -> {
-                        for (LoggingTextArea logger : loggers) {
-                            if (logger.dirty) {
-                                logger.setText(logger.head + logger.actual.toString() + logger.tail);
-                                logger.dirty = false;
-                            }
-                        }
-                    });
-                } catch (InterruptedException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        th.setDaemon(true);
-        th.start();
-    }
-
-    String head = "<html><body style='font-family: monospace;'><pre>";
-    StringBuilder actual = new StringBuilder();
-    String tail = "</pre></body></html>";
-    boolean dirty = false;
+    private static final String startHTMLTree = "<html><body style='font-family: monospace;'><p></p></body></html>";
 
     JScrollPane scrollBar;
 
@@ -51,90 +19,38 @@ public class LoggingTextArea extends JTextPane implements Logger {
         super();
         this.scrollBar = scrollBar;
         this.setEditable(false);
-        loggers.add(this);
-    }
-
-    public static void removeLogger(Logger logger) {
-        loggers.remove(logger);
+        this.setContentType("text/html");
+        this.setText(startHTMLTree);
     }
 
     @Override
     public void info(String info) {
-//        try {
-            loggerExecutor.execute(() -> {
-                actual.append(this.withColor(info, "white")).append("<br>");
-                dirty = true;
-//                //this.update(this.getGraphics());
-            });
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        log(withColor(info.replaceAll(" ", "&nbsp;"), "white"));
     }
 
     @Override
     public void fatal(String fatal) {
-//        try {
-            loggerExecutor.execute(() -> {
-                actual.append(this.withColor(fatal, "red", "bold")).append("<br>");
-                dirty = true;
-                //this.update(this.getGraphics());
-            });
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        log(withColor(fatal.replaceAll(" ", "&nbsp;"), "red", "bold"));
     }
 
     @Override
     public void error(String error) {
-//        try {
-            loggerExecutor.execute(() -> {
-                actual.append(this.withColor(error, "red")).append("<br>");
-                dirty = true;
-//                //this.update(this.getGraphics());
-            });
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        log(withColor(error.replaceAll(" ", "&nbsp;"), "red"));
     }
 
     @Override
     public void warn(String warning) {
-//        try {
-            loggerExecutor.execute(() -> {
-                actual.append(this.withColor(warning, "#FFD700")).append("<br>");
-                dirty = true;
-//                //this.update(this.getGraphics());
-            });
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        log(withColor(warning.replaceAll(" ", "&nbsp;"), "orange"));
     }
 
     @Override
     public void debug(String debug) {
-//        try {
-            loggerExecutor.execute(() -> {
-                actual.append(this.withColor(debug, "gray")).append("<br>");
-                dirty = true;
-                this.setText(head + actual.toString() + tail);
-//                //this.update(this.getGraphics());
-            });
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        log(withColor(debug.replaceAll(" ", "&nbsp;"), "gray"));
     }
 
     @Override
     public void trace(String trace) {
-//        try {
-            loggerExecutor.execute(() -> {
-                actual.append(this.withColor(trace, "cyan")).append("<br>");
-                dirty = true;
-//                //this.update(this.getGraphics());
-            });
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        log(withColor(trace.replaceAll(" ", "&nbsp;"), "cyan"));
     }
 
     @Override
@@ -149,8 +65,26 @@ public class LoggingTextArea extends JTextPane implements Logger {
         }
     }
 
+    public void log(String text) {
+        SwingUtilities.invokeLater(() -> {
+            //                int max = scrollBar.getVerticalScrollBar().getMaximum();
+            //                int size = scrollBar.getVerticalScrollBar().getVisibleAmount();
+            //                int value = scrollBar.getVerticalScrollBar().getValue();
+            //                if (value + size + 4 >= max) {
+            //                    ((DefaultCaret)this.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+            //                } else {
+            //                    ((DefaultCaret)this.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+            //                }
+            try {
+                ((HTMLDocument) this.getStyledDocument()).insertBeforeEnd(this.getDocument().getDefaultRootElement().getElement(1).getElement(0), text + "<br>");
+            } catch (BadLocationException | IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     public void clear() {
-        loggerExecutor.execute(() -> {actual = new StringBuilder(); dirty = true;});
+        SwingUtilities.invokeLater(() -> this.setText(startHTMLTree));
     }
 
     @Override
