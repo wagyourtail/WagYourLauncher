@@ -66,6 +66,7 @@ public class LoggingTextArea extends JTextPane implements Logger {
     }
 
     public void log(String text) {
+        text = text + "<br>";
         SwingUtilities.invokeLater(() -> {
             //                int max = scrollBar.getVerticalScrollBar().getMaximum();
             //                int size = scrollBar.getVerticalScrollBar().getVisibleAmount();
@@ -76,7 +77,7 @@ public class LoggingTextArea extends JTextPane implements Logger {
             //                    ((DefaultCaret)this.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
             //                }
             try {
-                ((HTMLDocument) this.getStyledDocument()).insertBeforeEnd(this.getDocument().getDefaultRootElement().getElement(1).getElement(0), text + "<br>");
+                ((HTMLDocument) this.getStyledDocument()).insertBeforeEnd(this.getDocument().getDefaultRootElement().getElement(1).getElement(0), text);
             } catch (BadLocationException | IOException e) {
                 e.printStackTrace();
             }
