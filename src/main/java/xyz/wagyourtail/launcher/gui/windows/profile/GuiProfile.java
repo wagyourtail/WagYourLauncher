@@ -171,11 +171,9 @@ public class GuiProfile extends JFrame {
         if (launcher.profiles.getRunningProfiles().contains(profile)) {
             launchBtn.setText(bundle.getString("GuiProfile.killBtn.text"));
             launchOfflineBtn.setText(bundle.getString("GuiProfile.forceKillBtn.text"));
-            launchOfflineBtn.setEnabled(false);
         } else {
             launchBtn.setText(bundle.getString("GuiProfile.launchBtn.text"));
             launchOfflineBtn.setText(bundle.getString("GuiProfile.launchOfflineBtn.text"));
-            launchOfflineBtn.setEnabled(true);
         }
     }
 
