@@ -7,9 +7,6 @@ group 'xyz.wagyourtail'
 version '1.0-SNAPSHOT'
 
 repositories {
-    maven {
-        url 'https://www.ebi.ac.uk/intact/maven/nexus/content/repositories/public/'
-    }
     mavenCentral()
 }
 
