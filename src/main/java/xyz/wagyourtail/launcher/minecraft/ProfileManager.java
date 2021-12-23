@@ -120,7 +120,7 @@ public class ProfileManager {
         args.addAll(Arrays.asList(resolved.getJavaArgs(launcher, profile, profile.nativePath(launcher), profile.javaArgs(), resolved.getClassPath(launcher, profile))));
         args.addAll(Arrays.asList(resolved.getLogging(launcher)));
         args.add(resolved.getMainClass());
-        args.addAll(Arrays.asList(resolved.getGameArgs(launcher, profileLogger, username, profile.gameDir(), offline)));
+        args.addAll(Arrays.asList(resolved.getGameArgs(launcher, profile, profileLogger, username, profile.gameDir(), offline)));
 
         profileLogger.info("Launching with args: ");
         boolean prevArgSensitive = false;

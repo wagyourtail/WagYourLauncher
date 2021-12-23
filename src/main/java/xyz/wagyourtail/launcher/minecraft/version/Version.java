@@ -35,7 +35,7 @@ public record Version(
         String id,
         String type,
         Version inheritsFrom,
-        Path jar,
+        String jar,
         long time,
         long releaseTime,
         int minimumLauncherVersion,
@@ -202,27 +202,40 @@ public record Version(
         List<String> classPath = new ArrayList<>(getLibraries(launcher, userProfile).stream().map(Path::toString).toList());
 
         // Add the version's jar
-        if (jar != null) {
+//        if (jar != null) {
             classPath.add(resolveClientJar(launcher).toAbsolutePath().toString());
-        }
+//        }
         return String.join(":", classPath);
     }
 
-    public Version.Download getClientDownload() throws IOException {
-        if (downloads != null) {
-            Version.Download download = downloads.get("client");
-            if (download != null) {
-                return download;
-            }
-        }
-        if (inheritsFrom != null) {
-            return inheritsFrom.getClientDownload();
-        }
-        throw new IOException("No client download found");
-    }
-
     public Path resolveClientJar(Launcher launcher) throws IOException {
-        Version.Download client = getClientDownload();
+        Path jar = launcher.minecraftPath.resolve("versions").resolve(id).resolve(id + ".jar");
+
+        if (this.jar != null && !this.jar.equals(id)) {
+            Path resolved = Version.resolve(launcher, this.jar).resolveClientJar(launcher);
+            if (OSUtils.getOSId().equals("windows")) {
+                //TODO: windows doesn't support symlinks??? without admin anyway...
+                Files.copy(resolved, jar, StandardCopyOption.REPLACE_EXISTING);
+            } else if (!Files.exists(jar)) {
+                Files.createLink(jar, resolved);
+            }
+            return jar;
+        }
+
+        Version.Download client = downloads.get("client");
+        if (client == null) {
+            if (inheritsFrom != null) {
+                Path resolved = inheritsFrom.resolveClientJar(launcher);
+                if (OSUtils.getOSId().equals("windows")) {
+                    //TODO: windows doesn't support symlinks??? without admin anyway...
+                    Files.copy(resolved, jar, StandardCopyOption.REPLACE_EXISTING);
+                } else if (!Files.exists(jar)) {
+                    Files.createLink(jar, resolved);
+                }
+                return jar;
+            }
+            throw new IOException("No client download found for version " + id);
+        }
 
         if (Files.exists(jar)) {
             if (Files.size(jar) != client.size() || !LibraryManager.shaMatch(jar, client.sha1())) {
@@ -276,10 +289,8 @@ public record Version(
             args.addAll(List.of(minecraftArguments.split(" ")));
             return args;
         }
-        for (Version.Arguments.Argument arg : arguments.game) {
-            if (arg.rules().length == 0) {
-                args.addAll(List.of(arg.values()));
-            } else {
+        if (arguments != null && arguments.game != null) {
+            for (Version.Arguments.Argument arg : arguments.game) {
                 if (Arrays.stream(arg.rules()).allMatch(rule -> rule.testRules(launcher))) {
                     args.addAll(List.of(arg.values()));
                 }
@@ -291,10 +302,10 @@ public record Version(
         return args;
     }
 
-    public String[] getGameArgs(Launcher launcher, Logger logger, String username, Path gameDir, boolean offline) throws IOException {
+    public String[] getGameArgs(Launcher launcher, Profile profile, Logger logger, String username, Path gameDir, boolean offline) throws IOException {
         List<String> args = getArgsRecursive(launcher);
         AssetIndex assetIndex = getAssets();
-        Path assets = launcher.assets.resolveAssets(assetIndex);
+        Path assets = launcher.assets.resolveAssets(profile, assetIndex);
         return args.stream().map(e -> {
                 try {
                     return e
@@ -302,7 +313,8 @@ public record Version(
                         .replace("${version_name}", id)
                         .replace("${game_directory}", gameDir.toAbsolutePath().toString())
                         .replace("${assets_root}", assets.toString())
-                        .replace("${assets_index_name}", assetIndex.id)//assetIndex.id)
+                        .replace("${game_assets}", assets.toString())
+                        .replace("${assets_index_name}", assetIndex.id)
                         .replace("${auth_uuid}", launcher.auth.getUUID(username).toString().replace("-", ""))
                         .replace("${auth_xuid}", "")
                         .replace("${auth_access_token}", offline ? "" : launcher.auth.getToken(logger, username))
@@ -376,11 +388,13 @@ public record Version(
         VersionManifest.Version manifest = VersionManifest.getVersion(versionId);
         if (manifest != null && manifest.time() > version.time()) {
             // download the new version
+            Path tmp = versionJson.getParent().resolve(versionId + ".json.tmp");
             try (InputStream is = manifest.url().openStream()) {
-                try (OutputStream os = Files.newOutputStream(versionJson, StandardOpenOption.WRITE)) {
+                try (OutputStream os = Files.newOutputStream(tmp, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
                     is.transferTo(os);
                 }
             }
+            Files.move(tmp, versionJson, StandardCopyOption.REPLACE_EXISTING);
             // parse the new version.json
             try (InputStreamReader isr = new InputStreamReader(Files.newInputStream(versionJson))) {
                 version = Version.parse(launcher, isr);
@@ -409,19 +423,14 @@ public record Version(
                 get(json, "id").map(JsonElement::getAsString).orElseThrow(() -> new IOException("Missing id")),
                 get(json, "type").map(JsonElement::getAsString).orElse(null),
                 inheritsFrom,
-                get(json, "jar").map(JsonElement::getAsString).map(e -> launcher.minecraftPath.resolve("versions").resolve(json.get("id").getAsString()).resolve(e + ".json")).orElseGet(() -> {
-                    if (inheritsFrom != null) {
-                        return null;
-                    }
-                    return launcher.minecraftPath.resolve("versions").resolve(json.get("id").getAsString()).resolve(json.get("id").getAsString() + ".jar");
-                }),
+                get(json, "jar").map(JsonElement::getAsString).orElse(null),
                 get(json, "time").map(JsonElement::getAsString).map(Instant::parse).map(Instant::toEpochMilli).orElse(0L),
                 get(json, "releaseTime").map(JsonElement::getAsString).map(Instant::parse).map(Instant::toEpochMilli).orElse(0L),
                 get(json, "minimumLauncherVersion").map(JsonElement::getAsInt).orElse(0),
                 get(json, "mainClass").map(JsonElement::getAsString).orElse(null),
                 get(json, "assetIndex").map(JsonElement::getAsJsonObject).map(AssetIndex::parse).orElse(null),
                 get(json, "assets").map(JsonElement::getAsString).orElse(null),
-                get(json, "downloads").map(JsonElement::getAsJsonObject).map(Download::parseAll).orElse(null),
+                get(json, "downloads").map(JsonElement::getAsJsonObject).map(Download::parseAll).orElse(Map.of()),
                 get(json, "javaVersion").map(JsonElement::getAsJsonObject).map(JavaVersion::parse).orElse(null),
                 get(json, "arguments").map(JsonElement::getAsJsonObject).map(Arguments::parse).orElse(null),
                 get(json, "minecraftArguments").map(JsonElement::getAsString).orElse(null),

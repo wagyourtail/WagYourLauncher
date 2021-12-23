@@ -4,7 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import xyz.wagyourtail.launcher.Launcher;
+import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import xyz.wagyourtail.launcher.minecraft.version.Version;
+import xyz.wagyourtail.util.OSUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,14 +29,12 @@ public class AssetsManager {
         this.dir = launcher.minecraftPath.resolve("assets").toAbsolutePath();
     }
 
-    public Path resolveAssets(Version.AssetIndex assetIndex) throws IOException {
+    public Path resolveAssets(Profile profile, Version.AssetIndex assetIndex) throws IOException {
         Path index = dir.resolve("indexes").resolve(assetIndex.id() + ".json");
         if (Files.exists(index)) {
             if (Files.size(index) != assetIndex.size() || !LibraryManager.shaMatch(index, assetIndex.sha1())) {
                 launcher.getLogger().warn("Assets index \"" + assetIndex.id() + "\" doesn't match!");
                 Files.delete(index);
-            } else {
-                return dir;
             }
         }
 
@@ -65,52 +65,76 @@ public class AssetsManager {
         }
 
         try (InputStreamReader reader = new InputStreamReader(Files.newInputStream(index))) {
-            resolveAssets(JsonParser.parseReader(reader).getAsJsonObject());
+            resolveAssets(profile, JsonParser.parseReader(reader).getAsJsonObject());
         }
 
         return dir;
     }
 
-    public void resolveAssets(JsonObject indexJson) throws IOException {
-        //TODO: legacy assets
+    public void resolveAssets(Profile profile, JsonObject indexJson) throws IOException {
+        boolean copyToResources = indexJson.has("map_to_resources") && indexJson.get("map_to_resources").getAsBoolean();
         for (String key : indexJson.keySet()) {
             Path keyDir = dir.resolve(key);
-            for (Map.Entry<String, JsonElement> asset : indexJson.getAsJsonObject(key).entrySet()) {
-                String hash = asset.getValue().getAsJsonObject().get("hash").getAsString();
-                Path assetPath = keyDir.resolve(hash.substring(0, 2)).resolve(hash);
-                if (Files.exists(assetPath)) {
-                    if (Files.size(assetPath) != asset.getValue().getAsJsonObject().get("size").getAsLong() || !LibraryManager.shaMatch(assetPath, hash)) {
-                        launcher.getLogger().warn("Asset \"" + key + "\" \"" + asset.getKey() + "\" doesn't match!");
-                        Files.delete(assetPath);
-                    } else {
-                        continue;
-                    }
-                }
-
-                if (!Files.exists(assetPath)) {
-                    for (int i = 0; i < 3; i++) {
-                        try {
-                            launcher.getLogger().trace("Downloading asset \"" + key + ":" + asset.getKey() + "\"...");
-                            Path tmp = assetPath.getParent().resolve(assetPath.getFileName() + ".tmp");
-                            Files.createDirectories(tmp.getParent());
-                            try (InputStream stream = new URL(ASSET_BASE_URL + hash.substring(0, 2) + "/" + hash).openStream()) {
-                                Files.write(tmp, stream.readAllBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-                            }
-                            if (LibraryManager.shaMatch(tmp, hash)) {
-                                Files.move(tmp, assetPath, StandardCopyOption.REPLACE_EXISTING);
-                                break;
-                            } else {
-                                throw new IOException("SHA1 doesn't match!");
-                            }
-                        } catch (IOException e) {
-                            launcher.getLogger().warn("Failed to download asset \"" + key + ":" + asset.getKey() + "\"!" + " (" + (i + 1) + "/3)");
-                            e.printStackTrace();
+            if (indexJson.get(key).isJsonObject()) {
+                for (Map.Entry<String, JsonElement> asset : indexJson.getAsJsonObject(key).entrySet()) {
+                    String hash = asset.getValue().getAsJsonObject().get("hash").getAsString();
+                    Path assetPath = keyDir.resolve(hash.substring(0, 2)).resolve(hash);
+                    if (Files.exists(assetPath)) {
+                        boolean size = Files.size(assetPath) == asset.getValue().getAsJsonObject().get("size").getAsLong();
+                        boolean sha = LibraryManager.shaMatch(assetPath, hash);
+                        if (!size || !sha) {
+                            launcher.getLogger().warn("Asset \"" + key + "\" \"" + asset.getKey() + "\" doesn't match! size: " + size + ", sha: " + sha);
+                            Files.delete(assetPath);
                         }
                     }
-                }
 
-                if (!Files.exists(assetPath)) {
-                    throw new IOException("Failed to download asset \"" + key + ":" + asset.getKey() + "\"!");
+                    if (!Files.exists(assetPath)) {
+                        for (int i = 0; i < 3; i++) {
+                            try {
+                                launcher.getLogger().trace(
+                                    "Downloading asset \"" + key + ":" + asset.getKey() + "\"...");
+                                Path tmp = assetPath.getParent().resolve(assetPath.getFileName() + ".tmp");
+                                Files.createDirectories(tmp.getParent());
+                                try (
+                                    InputStream stream = new URL(
+                                        ASSET_BASE_URL + hash.substring(0, 2) + "/" + hash).openStream()
+                                ) {
+                                    Files.write(
+                                        tmp,
+                                        stream.readAllBytes(),
+                                        StandardOpenOption.CREATE,
+                                        StandardOpenOption.WRITE
+                                    );
+                                }
+                                if (LibraryManager.shaMatch(tmp, hash)) {
+                                    Files.move(tmp, assetPath, StandardCopyOption.REPLACE_EXISTING);
+                                    break;
+                                } else {
+                                    throw new IOException("SHA1 doesn't match!");
+                                }
+                            } catch (IOException e) {
+                                launcher.getLogger().warn(
+                                    "Failed to download asset \"" + key + ": " + asset.getKey() + "\"!" + " (" +
+                                        (i + 1) + "/3)");
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    if (!Files.exists(assetPath)) {
+                        throw new IOException("Failed to download asset \"" + key + ": " + asset.getKey() + "\"!");
+                    }
+
+                    if (copyToResources) {
+                        Path resourcePath = profile.gameDir().resolve("resources").resolve(asset.getKey());
+                        Files.createDirectories(resourcePath.getParent());
+                        if (OSUtils.getOSId().equals("windows")) {
+                            //TODO: windows doesn't support symlinks??? without admin anyway...
+                            Files.copy(assetPath, resourcePath, StandardCopyOption.REPLACE_EXISTING);
+                        } else if (!Files.exists(resourcePath)) {
+                            Files.createLink(resourcePath, assetPath);
+                        }
+                    }
                 }
             }
         }

@@ -62,18 +62,22 @@ public class LibraryManager {
         Path local = userProfile.gameDir().resolve("libraries").resolve(artifact.path());
         // already exists and matches
         if (Files.exists(local)) {
-            if (Files.size(local) == artifact.size() && shaMatch(local, artifact.sha1())) {
+            boolean size = Files.size(local) == artifact.size();
+            boolean sha = LibraryManager.shaMatch(local, artifact.sha1());
+            if (size && sha) {
                 return local;
             } else {
                 Files.delete(local);
-                launcher.getLogger().warn("Deleted local library " + local.getFileName() + " because it didn't match the sha1 or file size");
+                launcher.getLogger().warn("Deleted local library " + local.getFileName() + " doesn't match! (size: " + size + ", sha: " + sha + ")");
             }
         }
         if (Files.exists(global)) {
+            boolean size = Files.size(global) == artifact.size();
+            boolean sha = LibraryManager.shaMatch(global, artifact.sha1());
             // if the file exists in global but doesn't match the sha store it local to the userProfile
-            if (Files.size(global) != artifact.size() || !shaMatch(global, artifact.sha1())) {
+            if (!size || !sha) {
                 global = local;
-               launcher.getLogger().trace("Storing library " + global.getFileName() + " local to userProfile as the global didn't match the sha1 or file size");
+               launcher.getLogger().trace("Storing library " + global.getFileName() + " local to userProfile as the global didn't match! (size: " + size + ", sha: " + sha + ")");
             }
         }
 
@@ -105,13 +109,11 @@ public class LibraryManager {
 
         if (!global.equals(local)) {
             Files.createDirectories(local.getParent());
-            if (!Files.exists(local)) {
-                if (OSUtils.getOSId().equals("windows")) {
-                    //TODO: windows doesn't support symlinks??? without admin anyway...
-                    Files.copy(global, local, StandardCopyOption.REPLACE_EXISTING);
-                } else {
-                    Files.createLink(local, global);
-                }
+            if (OSUtils.getOSId().equals("windows")) {
+                //TODO: windows doesn't support symlinks??? without admin anyway...
+                Files.copy(global, local, StandardCopyOption.REPLACE_EXISTING);
+            } else if (!Files.exists(local)) {
+                Files.createLink(local, global);
             }
         }
         return local;
@@ -166,12 +168,12 @@ public class LibraryManager {
             Files.move(tmp, global, StandardCopyOption.REPLACE_EXISTING);
         }
 
-        Files.createDirectories(local.getParent());
-        if (!Files.exists(local)) {
+        if (!global.equals(local)) {
+            Files.createDirectories(local.getParent());
             if (OSUtils.getOSId().equals("windows")) {
                 //TODO: windows doesn't support symlinks??? without admin anyway...
                 Files.copy(global, local, StandardCopyOption.REPLACE_EXISTING);
-            } else {
+            } else if (!Files.exists(local)) {
                 Files.createLink(local, global);
             }
         }

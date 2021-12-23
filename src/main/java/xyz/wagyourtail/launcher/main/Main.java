@@ -23,8 +23,6 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         main(argHandler.parseStringArgs(args));
-//            main(argHandler.parseStringArgs(new String[] {"-lp", "Baritone 1.12.2", "-u", "wagyourtail", "-n"}));
-//        main(argHandler.parseStringArgs(new String[] {"-n"}));
     }
 
     public static void main(ArgHandler.ParsedArgs args) throws Exception {
