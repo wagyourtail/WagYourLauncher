@@ -4,9 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import xyz.wagyourtail.launcher.Launcher;
-import xyz.wagyourtail.launcher.Logger;
-import xyz.wagyourtail.launcher.minecraft.LibraryManager;
+import xyz.wagyourtail.launcher.LauncherBase;
+import xyz.wagyourtail.notlog4j.Logger;
+import xyz.wagyourtail.launcher.managers.LibraryManager;
 import xyz.wagyourtail.launcher.minecraft.data.VersionManifest;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import xyz.wagyourtail.util.OSUtils;
@@ -72,7 +72,7 @@ public record Version(
         return javaVersion.majorVersion();
     }
 
-    public String[] getJavaArgs(Launcher launcher, Profile userProfile, Path nativePath, String javaArgs, String classPath) throws IOException {
+    public String[] getJavaArgs(LauncherBase launcher, Profile userProfile, Path nativePath, String javaArgs, String classPath) throws IOException {
         String natives = nativePath.toString();
         List<String> args = new ArrayList<>();
         if (javaArgs != null) {
@@ -187,7 +187,7 @@ public record Version(
         ).toArray(String[]::new);
     }
 
-    public List<Path> getLibraries(Launcher launcher, Profile userProfile) throws IOException {
+    public List<Path> getLibraries(LauncherBase launcher, Profile userProfile) throws IOException {
         List<Path> libs = new ArrayList<>();
         if (inheritsFrom != null) {
             libs.addAll(inheritsFrom.getLibraries(launcher, userProfile));
@@ -198,7 +198,7 @@ public record Version(
         return libs;
     }
 
-    public String getClassPath(Launcher launcher, Profile userProfile) throws IOException {
+    public String getClassPath(LauncherBase launcher, Profile userProfile) throws IOException {
         List<String> classPath = new ArrayList<>(getLibraries(launcher, userProfile).stream().map(Path::toString).toList());
 
         // Add the version's jar
@@ -208,7 +208,7 @@ public record Version(
         return String.join(":", classPath);
     }
 
-    public Path resolveClientJar(Launcher launcher) throws IOException {
+    public Path resolveClientJar(LauncherBase launcher) throws IOException {
         Path jar = launcher.minecraftPath.resolve("versions").resolve(id).resolve(id + ".jar");
 
         if (this.jar != null && !this.jar.equals(id)) {
@@ -251,7 +251,7 @@ public record Version(
                     Files.createDirectories(jar.getParent());
                     Path tmp = jar.getParent().resolve(jar.getFileName().toString() + ".tmp");
                     try (InputStream stream = client.url().openStream()) {
-                        Files.write(tmp, stream.readAllBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                        Files.write(tmp, stream.readAllBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                     }
                     if (LibraryManager.shaMatch(tmp, client.sha1())) {
                         Files.move(tmp, jar, StandardCopyOption.REPLACE_EXISTING);
@@ -283,7 +283,7 @@ public record Version(
         throw new IOException("No assets found");
     }
 
-    public List<String> getArgsRecursive(Launcher launcher) {
+    public List<String> getArgsRecursive(LauncherBase launcher) {
         List<String> args = new ArrayList<>();
         if (minecraftArguments != null) {
             args.addAll(List.of(minecraftArguments.split(" ")));
@@ -302,7 +302,7 @@ public record Version(
         return args;
     }
 
-    public String[] getGameArgs(Launcher launcher, Profile profile, Logger logger, String username, Path gameDir, boolean offline) throws IOException {
+    public String[] getGameArgs(LauncherBase launcher, Profile profile, Logger logger, String username, Path gameDir, boolean offline) throws IOException {
         List<String> args = getArgsRecursive(launcher);
         AssetIndex assetIndex = getAssets();
         Path assets = launcher.assets.resolveAssets(profile, assetIndex);
@@ -331,7 +331,7 @@ public record Version(
         ).toArray(String[]::new);
     }
 
-    public String[] getLogging(Launcher launcher) throws IOException {
+    public String[] getLogging(LauncherBase launcher) throws IOException {
         if (logging == null || logging.client == null) {
             if (inheritsFrom != null) {
                 return inheritsFrom.getLogging(launcher);
@@ -348,7 +348,7 @@ public record Version(
 
     private static final Map<String, Version> resolveCache = new HashMap<>();
 
-    public static Version resolve(Launcher launcher, String versionId) throws IOException {
+    public static Version resolve(LauncherBase launcher, String versionId) throws IOException {
         if (versionId.equals("latest-snapshot")) {
             return resolve(launcher, VersionManifest.getLatestSnapshot().id());
         } else if (versionId.equals("latest-release")) {
@@ -371,7 +371,7 @@ public record Version(
             } else {
                 // write the version.json
                 try (InputStream is = manifest.url().openStream()) {
-                    try (OutputStream os = Files.newOutputStream(versionJson, StandardOpenOption.WRITE, StandardOpenOption.CREATE)) {
+                    try (OutputStream os = Files.newOutputStream(versionJson, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE)) {
                         is.transferTo(os);
                     }
                 }
@@ -390,7 +390,7 @@ public record Version(
             // download the new version
             Path tmp = versionJson.getParent().resolve(versionId + ".json.tmp");
             try (InputStream is = manifest.url().openStream()) {
-                try (OutputStream os = Files.newOutputStream(tmp, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+                try (OutputStream os = Files.newOutputStream(tmp, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                     is.transferTo(os);
                 }
             }
@@ -410,7 +410,7 @@ public record Version(
         return Optional.ofNullable(json.get(key));
     }
 
-    public static Version parse(Launcher launcher, InputStreamReader isr) throws IOException {
+    public static Version parse(LauncherBase launcher, InputStreamReader isr) throws IOException {
         JsonObject json = JsonParser.parseReader(isr).getAsJsonObject();
         Version inheritsFrom = get(json, "inheritsFrom").map(JsonElement::getAsString).map(e -> {
                 try {
@@ -458,7 +458,7 @@ public record Version(
             );
         }
 
-        public boolean testRules(Launcher launcher) {
+        public boolean testRules(LauncherBase launcher) {
             if (os != null && !os.test(launcher)) return !action.equals("allow");
             if (features != null) {
                 for (Map.Entry<String, Boolean> entry : features.entrySet()) {
@@ -479,7 +479,7 @@ public record Version(
             );
         }
 
-        public boolean test(Launcher launcher) {
+        public boolean test(LauncherBase launcher) {
             if (name != null && !name.equals(OSUtils.getOSId())) return false;
             if (version != null && !SemVerUtils.matches(OSUtils.getOsVersion(), version)) return false;
             return arch == null || arch.equals(OSUtils.getOsArch());

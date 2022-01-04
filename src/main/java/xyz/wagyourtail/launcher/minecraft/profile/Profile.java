@@ -1,8 +1,8 @@
 package xyz.wagyourtail.launcher.minecraft.profile;
 
 import com.google.gson.JsonObject;
-import xyz.wagyourtail.launcher.Launcher;
-import xyz.wagyourtail.launcher.Logger;
+import xyz.wagyourtail.launcher.LauncherBase;
+import xyz.wagyourtail.notlog4j.Logger;
 import xyz.wagyourtail.launcher.minecraft.version.Version;
 
 import javax.xml.stream.XMLInputFactory;
@@ -55,11 +55,11 @@ public record Profile(
         return parts[parts.length - 1] + " (" + lastVersionId + ")";
     }
 
-    public Path nativePath(Launcher launcher) {
+    public Path nativePath(LauncherBase launcher) {
         return gameDir.resolve("natives").toAbsolutePath();
     }
 
-    public String getJavaDir(Launcher launcher) throws IOException {
+    public String getJavaDir(LauncherBase launcher) throws IOException {
         Version resolvedVersion = Version.resolve(launcher, lastVersionId);
         if (javaDir == null) {
             if (resolvedVersion == null) {
@@ -71,7 +71,7 @@ public record Profile(
         }
     }
 
-    public void pipeOutput(Launcher launcher, Process p, Logger logger) {
+    public void pipeOutput(LauncherBase launcher, Process p, Logger logger) {
         AtomicBoolean end = new AtomicBoolean(false);
         Thread t = new Thread(() -> {
             try {

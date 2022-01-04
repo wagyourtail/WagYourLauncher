@@ -12,11 +12,27 @@ repositories {
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
 
+sourceSets {
+    swinggui {
+        compileClasspath += main.output + main.compileClasspath
+        runtimeClasspath += main.output + main.runtimeClasspath
+    }
+    console {
+        compileClasspath += main.output + main.compileClasspath
+        runtimeClasspath += main.output + main.runtimeClasspath
+    }
+    launch {
+        compileClasspath += main.output + swinggui.output + console.output + main.compileClasspath
+        runtimeClasspath += main.output + swinggui.output + console.output + main.runtimeClasspath
+    }
+}
+
 dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
 }
 
 jar {
+    from sourceSets.launch.output
     classifier 'slim'
 
     manifest {
