@@ -2,19 +2,26 @@
  * Created by JFormDesigner on Mon Dec 20 07:09:29 MST 2021
  */
 
-package xyz.wagyourtail.launcher.swing.windows.keystore;
+package xyz.wagyourtail.launcher.swing.screen.keystore;
+
+import xyz.wagyourtail.launcher.LauncherBase;
+import xyz.wagyourtail.launcher.gui.screen.KeystorePasswordScreen;
+import xyz.wagyourtail.launcher.gui.screen.MainScreen;
+import xyz.wagyourtail.launcher.swing.screen.BaseSwingScreen;
+import xyz.wagyourtail.launcher.swing.screen.main.GuiMainWindow;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import javax.swing.*;
 import javax.swing.border.*;
 
 /**
  * @author wagyourtail
  */
-public class GuiKeystorePassword extends JFrame {
+public class GuiKeystorePassword extends BaseSwingScreen implements KeystorePasswordScreen {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel dialogPane;
@@ -25,19 +32,21 @@ public class GuiKeystorePassword extends JFrame {
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     public final boolean newPassword;
-    public final AtomicReference<char[]> password = new AtomicReference<>(null);
+    public Consumer<char[]> onPassword;
 
-    public GuiKeystorePassword(boolean newPassword) {
+    public GuiKeystorePassword(LauncherBase launcher, MainScreen mainWindow, boolean newPassword) {
+        super(launcher, mainWindow);
         this.newPassword = newPassword;
         initComponents();
     }
 
     private void onOk(ActionEvent e) {
-        password.set(passwordField1.getPassword());
         synchronized (this) {
-            this.notifyAll();
+            if (onPassword != null) {
+                onPassword.accept(passwordField1.getPassword());
+            }
         }
-        dispose();
+        close();
     }
 
     private void enterKeyPressed(KeyEvent e) {
@@ -125,4 +134,10 @@ public class GuiKeystorePassword extends JFrame {
             title.setText(bundle.getString("KeystorePassword.title.textNew"));
         }
     }
+
+    @Override
+    public synchronized void then(Consumer<char[]> r) {
+        this.onPassword = r;
+    }
+
 }

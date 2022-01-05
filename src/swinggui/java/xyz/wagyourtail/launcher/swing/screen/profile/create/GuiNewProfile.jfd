@@ -20,25 +20,10 @@ new FormModel {
 					add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
 						name: "tabbedPane1"
 						"tabPlacement": 2
+						auxiliary() {
+							"JavaCodeGenerator.postInitCode": "populateTabbedPane();"
+						}
 						addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "tabbedPane1StateChanged", true ) )
-						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridLayout ) ) {
-							name: "panel3"
-							auxiliary() {
-								"JavaCodeGenerator.variableName": "vanillaPanel"
-								"JavaCodeGenerator.postInitCode": "vanillaPanel=new VanillaVersion(this);"
-							}
-						}, new FormLayoutConstraints( null ) {
-							"title": new FormMessage( null, "GuiNewProfile.panel3.tab.title" )
-						} )
-						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridLayout ) ) {
-							name: "panel2"
-							auxiliary() {
-								"JavaCodeGenerator.variableName": "installedPanel"
-								"JavaCodeGenerator.postInitCode": "installedPanel = new InstalledVersion(this, launcher);"
-							}
-						}, new FormLayoutConstraints( null ) {
-							"title": new FormMessage( null, "GuiNewProfile.panel2.tab.title" )
-						} )
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "Center"

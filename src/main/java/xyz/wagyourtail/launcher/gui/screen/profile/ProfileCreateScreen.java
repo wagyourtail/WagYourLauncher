@@ -52,7 +52,7 @@ public interface ProfileCreateScreen extends Screen {
 
         getLauncher().profiles.write();
 
-        getLauncher().refreshLaunchedProfiles();
+        getLauncher().refreshProfiles();
 
         return profile;
     }

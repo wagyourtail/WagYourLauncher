@@ -13,14 +13,14 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 
 public interface MainScreen extends Screen {
-     ProfileScreen openProfile(Profile profile);
+     ProfileScreen getProfileScreen(Profile profile);
 
     ProfileCreateScreen openAddProfile();
 
     AddAccountScreen openAddAccount();
 
     default void launchProfile(Profile profile, boolean offline) {
-        openProfile(profile).launch(offline);
+        getProfileScreen(profile).launch(offline);
     }
 
     default void selectAccount(String account) throws UnrecoverableEntryException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, InterruptedException {

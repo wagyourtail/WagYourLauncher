@@ -9,12 +9,12 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 			"$horizontalGroup": "par t {seq t {space :p:12:p, comp scrollPane1::::596:x, space u:p::p, comp panel3:::p::p, space :p:12:p}}"
-			"$verticalGroup": "par l {seq {space :::p, par l {comp panel3:::::x, comp scrollPane1::::301:x}, space :::p}}"
+			"$verticalGroup": "par l {seq {space :::p, par l {comp panel3:::::x, comp scrollPane1::::313:x}, space :::p}}"
 		} ) {
 			name: "this"
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 				"$horizontalGroup": "par l {comp releaseFilter::l:::x, comp snapshotFilter::l:::x, comp oldSnapshots::t::113:x, comp betas::l:::x, comp alphas::l:::x, comp experiments::l:::x, comp label2::l:::x, comp refresh::l::113:x}"
-				"$verticalGroup": "par l {seq {comp label2:::p::p, space :p:3:p, comp releaseFilter:::p::p, space :::p, comp snapshotFilter:::p::p, space :::p, comp oldSnapshots:::p::p, space :::p, comp betas:::p::p, space :::p, comp alphas:::p::p, space :::p, comp experiments:::p::p, space s:::p, comp refresh:::p::p, space ::54:x}}"
+				"$verticalGroup": "par l {seq {comp label2:::p::p, space :p:3:p, comp releaseFilter:::p::p, space :::p, comp snapshotFilter:::p::p, space :::p, comp oldSnapshots:::p::p, space :::p, comp betas:::p::p, space :::p, comp alphas:::p::p, space :::p, comp experiments:::p::p, space s:::p, comp refresh:::p::p, space ::76:x}}"
 			} ) {
 				name: "panel3"
 				add( new FormComponent( "javax.swing.JCheckBox" ) {

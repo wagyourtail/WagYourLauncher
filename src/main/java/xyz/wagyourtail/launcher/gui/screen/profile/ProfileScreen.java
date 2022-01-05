@@ -12,7 +12,9 @@ public interface ProfileScreen extends Screen {
 
     Profile getProfile();
 
-    void editProfile(Profile newProfile);
+    default void editProfile(Profile newProfile) {
+        getLauncher().profiles.modifyProfile(getProfile(), newProfile);
+    }
 
     default void launch(boolean offline) {
         if (getLauncher().profiles.getRunningProfiles().contains(getProfile())) {

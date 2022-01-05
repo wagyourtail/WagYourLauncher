@@ -2,11 +2,11 @@
  * Created by JFormDesigner on Tue Dec 21 03:40:01 MST 2021
  */
 
-package xyz.wagyourtail.launcher.swing.windows.profile.create.versions;
+package xyz.wagyourtail.launcher.swing.screen.profile.create.versions;
 
 import java.awt.event.*;
 
-import xyz.wagyourtail.launcher.swing.windows.profile.create.GuiNewProfile;
+import xyz.wagyourtail.launcher.swing.screen.profile.create.GuiNewProfile;
 import xyz.wagyourtail.launcher.minecraft.data.VersionManifest;
 
 import javax.swing.*;
@@ -128,7 +128,7 @@ public class VanillaVersion extends VersionSelector {
                         .addComponent(experiments)
                         .addGap(18, 18, 18)
                         .addComponent(refresh)
-                        .addContainerGap(54, Short.MAX_VALUE))
+                        .addContainerGap(76, Short.MAX_VALUE))
             );
         }
 
@@ -158,7 +158,7 @@ public class VanillaVersion extends VersionSelector {
                     .addContainerGap()
                     .addGroup(layout.createParallelGroup()
                         .addComponent(panel3, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
                     .addContainerGap())
         );
         // JFormDesigner - End of component initialization  //GEN-END:initComponents

@@ -5,16 +5,15 @@ import xyz.wagyourtail.launcher.gui.screen.KeystorePasswordScreen;
 import xyz.wagyourtail.launcher.nogui.screen.ConsoleKeystorePasswordScreen;
 import xyz.wagyourtail.launcher.nogui.screen.ConsoleMainScreen;
 
-import java.io.Console;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 public class LauncherNoGui extends LauncherBase {
 
     public LauncherNoGui(Path minecraftPath) throws IOException {
         super(minecraftPath);
+        this.mainWindow = new ConsoleMainScreen(this);
     }
 
     @Override
@@ -29,16 +28,21 @@ public class LauncherNoGui extends LauncherBase {
     }
 
     @Override
-    protected void init() throws IOException {
+    public void init() throws IOException {
         try {
-            this.mainWindow = new ConsoleMainScreen(this);
+            ((ConsoleMainScreen) mainWindow).init();
         } catch (InterruptedException e) {
             throw new IOException(e);
         }
     }
 
     @Override
-    public void refreshLaunchedProfiles() {
+    public void refreshProfiles() {
+
+    }
+
+    @Override
+    public void refreshAccounts() {
 
     }
 

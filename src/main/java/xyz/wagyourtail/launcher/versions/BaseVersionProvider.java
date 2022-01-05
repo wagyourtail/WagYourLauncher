@@ -45,7 +45,7 @@ public interface BaseVersionProvider<T extends BaseVersionProvider.BaseVersionDa
          * downloads the version and provides the version id
          * @return the version id
          */
-        String provide();
+        String provide() throws IOException;
 
     }
 }

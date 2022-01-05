@@ -2,7 +2,7 @@
  * Created by JFormDesigner on Mon Dec 20 09:06:13 MST 2021
  */
 
-package xyz.wagyourtail.launcher.swing.windows.login;
+package xyz.wagyourtail.launcher.swing.screen.login;
 
 import java.awt.event.*;
 import xyz.wagyourtail.launcher.LauncherBase;
@@ -22,9 +22,12 @@ public class SelectType extends JPanel {
     private final LauncherBase launcher;
     private final GuiLogin parent;
 
-    public SelectType(GuiLogin parent, LauncherBase launcher) {
+    private final String[] types;
+
+    public SelectType(GuiLogin parent, LauncherBase launcher, String[] types) {
         this.launcher = launcher;
         this.parent = parent;
+        this.types = types;
         initComponents();
     }
 
@@ -71,7 +74,7 @@ public class SelectType extends JPanel {
     }
 
     private void populateBox(JComboBox box) {
-        for (String s : launcher.auth.authProviders.keySet()) {
+        for (String s : types) {
             box.addItem(s);
         }
     }

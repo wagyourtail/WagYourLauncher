@@ -77,6 +77,8 @@ public abstract class LauncherBase {
 
     protected abstract void init() throws IOException;
 
-    public abstract void refreshLaunchedProfiles();
+    public abstract void refreshProfiles();
+
+    public abstract void refreshAccounts();
 
 }

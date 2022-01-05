@@ -2,7 +2,13 @@
  * Created by JFormDesigner on Wed Dec 22 14:46:45 MST 2021
  */
 
-package xyz.wagyourtail.launcher.swing.windows.login;
+package xyz.wagyourtail.launcher.swing.screen.login;
+
+import xyz.wagyourtail.launcher.LauncherBase;
+import xyz.wagyourtail.launcher.gui.screen.MainScreen;
+import xyz.wagyourtail.launcher.gui.screen.login.UsernamePasswordScreen;
+import xyz.wagyourtail.launcher.swing.screen.BaseSwingScreen;
+import xyz.wagyourtail.launcher.swing.screen.main.GuiMainWindow;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -16,27 +22,52 @@ import java.util.function.BiConsumer;
 /**
  * @author unknown
  */
-public class GuiUsernamePassword extends JFrame {
-    private final BiConsumer<String, char[]> onAccept;
-    public GuiUsernamePassword(BiConsumer<String, char[]> onAccept) {
+public class GuiUsernamePassword extends BaseSwingScreen implements UsernamePasswordScreen {
+    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    private JPanel dialogPane;
+    private JPanel contentPanel;
+    private JLabel label2;
+    private JLabel label3;
+    private JTextField usernameField;
+    private JPasswordField passwordField;
+    private JPanel buttonBar;
+    private JButton okButton;
+    private JButton cancelButton;
+    // JFormDesigner - End of variables declaration  //GEN-END:variables
+
+
+    private BiConsumer<String, char[]> onAccept;
+    private String username;
+    private char[] password;
+
+    public GuiUsernamePassword(LauncherBase launcher, MainScreen mainWindow) {
+        super(launcher, mainWindow);
         this.onAccept = onAccept;
         initComponents();
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                onAccept.accept(null, null);
+                cancel(null);
             }
         });
     }
 
     private void cancel(ActionEvent e) {
-        onAccept.accept(usernameField.getText(), passwordField.getPassword());
-        this.dispose();
+        synchronized (this) {
+            this.username = "";
+            this.password = new char[0];
+            onAccept.accept(username, password);
+        }
+        this.close();
     }
 
     private void ok(ActionEvent e) {
-        onAccept.accept(null, null);
-        this.dispose();
+        synchronized (this) {
+            this.username = usernameField.getText();
+            this.password = passwordField.getPassword();
+            onAccept.accept(username, password);
+        }
+        this.close();
     }
 
     private void initComponents() {
@@ -131,15 +162,8 @@ public class GuiUsernamePassword extends JFrame {
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    private JPanel dialogPane;
-    private JPanel contentPanel;
-    private JLabel label2;
-    private JLabel label3;
-    private JTextField usernameField;
-    private JPasswordField passwordField;
-    private JPanel buttonBar;
-    private JButton okButton;
-    private JButton cancelButton;
-    // JFormDesigner - End of variables declaration  //GEN-END:variables
+    @Override
+    public synchronized void then(BiConsumer<String, char[]> r) {
+        this.onAccept = r;
+    }
 }

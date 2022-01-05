@@ -11,7 +11,7 @@ import java.util.*;
 
 public class VanillaVersions implements BaseVersionProvider<VanillaVersions.VanillaVersion> {
     private final LauncherBase launcher;
-    private final Map<String, VanillaVersion> versions = new HashMap<>();
+    private final Map<String, VanillaVersion> versions = new LinkedHashMap<>();
 
     public VanillaVersions(LauncherBase launcher) {
         this.launcher = launcher;

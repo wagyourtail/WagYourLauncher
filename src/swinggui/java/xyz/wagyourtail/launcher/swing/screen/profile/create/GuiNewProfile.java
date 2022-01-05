@@ -2,36 +2,33 @@
  * Created by JFormDesigner on Mon Dec 20 15:59:10 MST 2021
  */
 
-package xyz.wagyourtail.launcher.swing.windows.profile.create;
+package xyz.wagyourtail.launcher.swing.screen.profile.create;
 
-import java.awt.event.*;
-import javax.swing.event.*;
+import xyz.wagyourtail.launcher.LauncherBase;
+import xyz.wagyourtail.launcher.gui.screen.MainScreen;
+import xyz.wagyourtail.launcher.gui.screen.profile.ProfileCreateScreen;
+import xyz.wagyourtail.launcher.swing.screen.BaseSwingScreen;
+import xyz.wagyourtail.launcher.swing.screen.profile.create.versions.v2.VersionSelector;
+import xyz.wagyourtail.launcher.versions.BaseVersionProvider;
 
-import xyz.wagyourtail.launcher.swing.windows.profile.create.versions.InstalledVersion;
-import xyz.wagyourtail.launcher.swing.windows.profile.create.versions.VanillaVersion;
-import xyz.wagyourtail.launcher.swing.windows.profile.create.versions.VersionSelector;
-import xyz.wagyourtail.launcher.minecraft.profile.Profile;
-
-import java.awt.*;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.ResourceBundle;
 
 /**
  * @author unknown
  */
-public class GuiNewProfile extends JFrame {
+public class GuiNewProfile extends BaseSwingScreen implements ProfileCreateScreen {
     public final LauncherBase launcher;
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JTabbedPane tabbedPane1;
-    private JPanel vanillaPanel;
-    private JPanel installedPanel;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
@@ -40,15 +37,14 @@ public class GuiNewProfile extends JFrame {
     private JTextField nameField;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
-    public GuiNewProfile(LauncherBase launcher) {
+    public GuiNewProfile(LauncherBase launcher, MainScreen mainWindow) {
+        super(launcher, mainWindow);
         this.launcher = launcher;
         initComponents();
     }
 
     private void tabbedPane1StateChanged(ChangeEvent e) {
-        if (!((VersionSelector) tabbedPane1.getSelectedComponent()).isInitialized()) {
-            ((VersionSelector) tabbedPane1.getSelectedComponent()).init();
-        }
+        ((VersionSelector) tabbedPane1.getSelectedComponent()).initComponents();
     }
 
     private void ok(ActionEvent e) {
@@ -65,8 +61,6 @@ public class GuiNewProfile extends JFrame {
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         tabbedPane1 = new JTabbedPane();
-        vanillaPanel = new JPanel();
-        installedPanel = new JPanel();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -92,20 +86,7 @@ public class GuiNewProfile extends JFrame {
                 {
                     tabbedPane1.setTabPlacement(SwingConstants.LEFT);
                     tabbedPane1.addChangeListener(e -> tabbedPane1StateChanged(e));
-
-                    //======== vanillaPanel ========
-                    {
-                        vanillaPanel.setLayout(new GridLayout());
-                        vanillaPanel=new VanillaVersion(this);
-                    }
-                    tabbedPane1.addTab(bundle.getString("GuiNewProfile.panel3.tab.title"), vanillaPanel);
-
-                    //======== installedPanel ========
-                    {
-                        installedPanel.setLayout(new GridLayout());
-                        installedPanel = new InstalledVersion(this, launcher);
-                    }
-                    tabbedPane1.addTab(bundle.getString("GuiNewProfile.panel2.tab.title"), installedPanel);
+                    populateTabbedPane();
                 }
                 contentPanel.add(tabbedPane1);
             }
@@ -158,49 +139,23 @@ public class GuiNewProfile extends JFrame {
     }
 
     public void createVanillaProfile() {
-        String lastVersionId = ((VersionSelector) tabbedPane1.getSelectedComponent()).getSelected();
-
-        if (lastVersionId == null) {
-            return;
-        }
-
-        String id = UUID.randomUUID().toString();
-        String name = getProfileName();
-
-
-        Path parentDir = launcher.minecraftPath.resolve("profiles");
-        Path gameDir = parentDir.resolve(name.isEmpty() ? "_0" : name);
-
-        int i = 1;
-        while (Files.exists(gameDir)) {
-            gameDir = gameDir.getParent().resolve(name + "_" + i++);
-        }
-
-        launcher.profiles.addProfile(id, new Profile(
-            id,
-            name,
-            gameDir,
-            System.currentTimeMillis(),
-            System.currentTimeMillis(),
-            "Furnace",
-            null,
-            null,
-            lastVersionId,
-            Profile.Type.CUSTOM
-        ));
         try {
-            launcher.profiles.write();
-            try {
-                launcher.mainWindow.populateProfiles();
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Failed to populate profiles", "Error", JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-            }
+            createProfile();
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Failed to write profiles.json", "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            getLauncher().error("Error creating profile", e);
         }
-        launcher.newProfile = null;
         dispose();
     }
+
+    private void populateTabbedPane() {
+        for (BaseVersionProvider<?> versionProvider : launcher.profiles.versionProviders) {
+            tabbedPane1.add(versionProvider.getName(), new xyz.wagyourtail.launcher.swing.screen.profile.create.versions.v2.VersionSelector(launcher, versionProvider));
+        }
+    }
+
+    @Override
+    public BaseVersionProvider.BaseVersionData getSelectedVersion() {
+        return ((xyz.wagyourtail.launcher.swing.screen.profile.create.versions.v2.VersionSelector) tabbedPane1.getSelectedComponent()).getSelected();
+    }
+
 }

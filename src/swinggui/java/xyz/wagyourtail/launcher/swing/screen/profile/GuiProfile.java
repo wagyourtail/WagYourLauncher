@@ -2,10 +2,15 @@
  * Created by JFormDesigner on Mon Dec 20 09:00:58 MST 2021
  */
 
-package xyz.wagyourtail.launcher.swing.windows.profile;
+package xyz.wagyourtail.launcher.swing.screen.profile;
 
 import java.awt.event.*;
 
+import xyz.wagyourtail.launcher.LauncherBase;
+import xyz.wagyourtail.launcher.gui.screen.MainScreen;
+import xyz.wagyourtail.launcher.gui.screen.profile.ProfileScreen;
+import xyz.wagyourtail.launcher.swing.screen.BaseSwingScreen;
+import xyz.wagyourtail.launcher.swing.screen.main.GuiMainWindow;
 import xyz.wagyourtail.notlog4j.Logger;
 import xyz.wagyourtail.launcher.swing.component.logging.LoggingTextArea;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
@@ -18,7 +23,7 @@ import javax.swing.border.*;
 /**
  * @author unknown
  */
-public class GuiProfile extends JFrame {
+public class GuiProfile extends BaseSwingScreen implements ProfileScreen {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel dialogPane;
@@ -35,9 +40,8 @@ public class GuiProfile extends JFrame {
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     private Profile profile;
-    private LauncherBase launcher;
-    public GuiProfile(LauncherBase launcher, Profile p) {
-        this.launcher = launcher;
+    public GuiProfile(LauncherBase launcher, MainScreen mainWindow, Profile p) {
+        super(launcher, mainWindow);
         this.profile = p;
         initComponents();
     }
@@ -165,16 +169,27 @@ public class GuiProfile extends JFrame {
         return ((LoggingTextArea) currentLogs);
     }
 
+    @Override
+    public Profile getProfile() {
+        return profile;
+    }
+
+    @Override
+    public void editProfile(Profile newProfile) {
+        if (profile.equals(newProfile)) {
+            return;
+        }
+        ProfileScreen.super.editProfile(newProfile);
+        this.profile = newProfile;
+    }
+
+    @Override
     public void launch(boolean offline) {
         if (launcher.profiles.getRunningProfiles().contains(profile)) {
-            if (offline) {
-                launcher.profiles.forceKillRunning(profile);
-            } else {
-                launcher.profiles.killRunning(profile);
-            }
+            kill(offline);
         } else {
             try {
-                launcher.launch(profile, launcher.mainWindow.getCurrentAccount().name(), offline);
+                ProfileScreen.super.launch(offline);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 ex.printStackTrace();
@@ -191,10 +206,5 @@ public class GuiProfile extends JFrame {
             launchBtn.setText(bundle.getString("GuiProfile.launchBtn.text"));
             launchOfflineBtn.setText(bundle.getString("GuiProfile.launchOfflineBtn.text"));
         }
-    }
-
-    public GuiProfile setProfile(Profile profile) {
-        this.profile = profile;
-        return this;
     }
 }

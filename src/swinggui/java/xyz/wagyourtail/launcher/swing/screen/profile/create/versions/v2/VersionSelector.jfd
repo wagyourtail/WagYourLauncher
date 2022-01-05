@@ -1,0 +1,53 @@
+JFDML JFormDesigner: "7.0.5.2.410" Java: "11.0.13" encoding: "UTF-8"
+
+new FormModel {
+	"i18n.autoExternalize": true
+	"i18n.bundlePackage": "lang"
+	"i18n.bundleName": "lang"
+	"i18n.keyPrefix": "VersionSelector"
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {seq l {space :::p, comp scrollPane1::::513:x, space s:::p, par l:::p {comp button1::::147:x, comp panel1::::147:x}, space :::p}}"
+			"$verticalGroup": "par l {seq t {par t {comp scrollPane1::::339:x, seq {space :::p, comp panel1::::297:x, space :::p, comp button1:::p::p}}, space :::p}}"
+		} ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				add( new FormComponent( "javax.swing.JTable" ) {
+					name: "treeTable"
+					auxiliary() {
+						"JavaCodeGenerator.customCreateCode": "new JTreeTable(new VersionTreeTableModel<>(provider));"
+					}
+				} )
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "button1"
+				"text": new FormMessage( null, "VersionSelector.button1.text" )
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+				"$columnSpecs": "0"
+				"$rowSpecs": "0, 0"
+				"$hGap": 5
+				"$vGap": 5
+				"$alignTop": true
+				"$alignLeft": true
+			} ) {
+				name: "panel1"
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "checkBox1"
+					"text": new FormMessage( null, "VersionSelector.checkBox1.text" )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "checkBox2"
+					"text": new FormMessage( null, "VersionSelector.checkBox2.text" )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridy": 1
+				} )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 690, 345 )
+		} )
+	}
+}

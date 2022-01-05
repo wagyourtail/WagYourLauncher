@@ -2,12 +2,17 @@
  * Created by JFormDesigner on Mon Dec 20 08:58:38 MST 2021
  */
 
-package xyz.wagyourtail.launcher.swing.windows.login;
+package xyz.wagyourtail.launcher.swing.screen.login;
 
 import java.awt.event.*;
 
 import xyz.wagyourtail.launcher.LauncherBase;
+import xyz.wagyourtail.launcher.gui.screen.MainScreen;
+import xyz.wagyourtail.launcher.gui.screen.login.AddAccountScreen;
+import xyz.wagyourtail.launcher.gui.screen.login.UsernamePasswordScreen;
 import xyz.wagyourtail.launcher.swing.component.logging.ProgressPanel;
+import xyz.wagyourtail.launcher.swing.screen.BaseSwingScreen;
+import xyz.wagyourtail.launcher.swing.screen.main.GuiMainWindow;
 import xyz.wagyourtail.notlog4j.Logger;
 
 import java.awt.*;
@@ -24,7 +29,7 @@ import javax.swing.border.*;
 /**
  * @author unknown
  */
-public class GuiLogin extends JFrame {
+public class GuiLogin extends BaseSwingScreen implements AddAccountScreen {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel dialogPane;
@@ -33,11 +38,8 @@ public class GuiLogin extends JFrame {
     private JPanel buttonBar;
     private JButton cancelButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
-
-    private final LauncherBase launcher;
-
-    public GuiLogin(LauncherBase launcher) {
-        this.launcher = launcher;
+    public GuiLogin(LauncherBase launcher, MainScreen mainWindow) {
+        super(launcher, mainWindow);
         initComponents();
         step1();
     }
@@ -100,7 +102,7 @@ public class GuiLogin extends JFrame {
     }
 
     public void step1() {
-        panel1.add(new SelectType(this, launcher));
+        panel1.add(new SelectType(this, launcher, getProviders()));
         pack();
     }
 
@@ -110,21 +112,25 @@ public class GuiLogin extends JFrame {
         this.setMinimumSize(new Dimension(600, 600));
         pack();
         CompletableFuture.runAsync(() -> {
-            try {
-                launcher.auth.authProviders.get(selection).withLogger(this.getLogger(), ((ProgressPanel) this.panel1.getComponent(0)).progressBar);
-                if (launcher.mainWindow != null) {
-                    launcher.mainWindow.populateAccounts();
-                    this.dispose();
-                    launcher.login = null;
-                }
-            } catch (CertificateException | IOException | KeyStoreException | NoSuchAlgorithmException | InvalidKeySpecException | InterruptedException e) {
-                JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-            }
+            runLogin(selection);
+            launcher.refreshAccounts();
+            this.close();
         });
     }
 
+    @Override
     public Logger getLogger() {
         return ((ProgressPanel) panel1.getComponent(0)).getLogger();
     }
+
+    @Override
+    public void setProgress(int progress) {
+        ((ProgressPanel) panel1.getComponent(0)).progressBar.setValue(progress);
+    }
+
+    @Override
+    public UsernamePasswordScreen getUsernamePassword() {
+        return new GuiUsernamePassword(getLauncher(), getMainWindow());
+    }
+
 }

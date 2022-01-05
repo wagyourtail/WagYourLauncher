@@ -75,6 +75,9 @@ public class AuthManager {
                 registeredUsers1 = new HashMap<>();
             }
         }
+        if (registeredUsers1 == null) {
+            registeredUsers1 = new HashMap<>();
+        }
         registeredUsers = registeredUsers1;
 
         // select a default if none
@@ -165,8 +168,8 @@ public class AuthManager {
                     GetProfile.MCProfile profile = provider.resolveProfile(logger, json, offline);
                     if (profile != null && !offline) {
                         lastUsedCache = profile;
-                        return profile;
                     }
+                    return profile;
                 }
                 registeredUsers.remove(username);
                 saveRegisteredUsers();
@@ -195,6 +198,7 @@ public class AuthManager {
     }
 
     public void saveRegisteredUsers() throws IOException {
+        launcher.refreshProfiles();
         Path tmp = registeredUsersPath.getParent().resolve(registeredUsersPath.getFileName() + ".tmp");
         JsonObject json = new JsonObject();
         if (selectedProfile != null)

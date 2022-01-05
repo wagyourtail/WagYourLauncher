@@ -14,7 +14,7 @@ import java.util.*;
 public class InstalledVersions implements BaseVersionProvider<InstalledVersions.InstalledVersion> {
     private final LauncherBase launcher;
     private final Path versionsPath;
-    private final Map<String, InstalledVersion> versions = new HashMap<>();
+    private final Map<String, InstalledVersion> versions = new LinkedHashMap<>();
 
     public InstalledVersions(LauncherBase launcher) {
         this.launcher = launcher;

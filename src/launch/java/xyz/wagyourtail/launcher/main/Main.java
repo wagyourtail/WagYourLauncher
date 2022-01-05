@@ -26,22 +26,26 @@ public class Main {
             return;
         }
         Path path = args.get("--path").map(e -> Path.of(e[1])).orElse(Path.of("./"));
-        if (args.has("--launch")) {
-            String profileName = args.get("--launch").get()[1];
-            String username = args.get("--username").orElseThrow(() -> new IllegalArgumentException("No username specified"))[1];
-            LauncherBase launcher;
-            if (args.has("--nogui")) {
-                launcher = new LauncherNoGui(path);
-            } else {
-                launcher = new SwingWindowManager(path);
-            }
-            LauncherNoGui.launchProfile(launcher, profileName, username);
-            return;
-        }
+        //TODO fix:, probably another source set for a launch args version...
+//        if (args.has("--launch")) {
+//            String profileName = args.get("--launch").get()[1];
+//            String username = args.get("--username").map(e -> e[1]).orElse(null);
+//            LauncherBase launcher;
+//            if (args.has("--nogui")) {
+//                launcher = new LauncherNoGui(path);
+//            } else {
+//                launcher = new SwingWindowManager(path);
+//            }
+//            if (username != null) {
+//                launcher.auth.setSelectedProfile(launcher.auth.getProfile(launcher.getLogger(), username, false));
+//            }
+//            launcher.mainWindow.launchProfile(launcher.profiles.getProfileById(profileName).orElseThrow(), false);
+//            return;
+//        }
         if (args.has("--nogui")) {
-            new LauncherNoGui(path).run();
+            new LauncherNoGui(path).init();
         } else {
-            new SwingWindowManager(path);
+            new SwingWindowManager(path).init();
         }
     }
 

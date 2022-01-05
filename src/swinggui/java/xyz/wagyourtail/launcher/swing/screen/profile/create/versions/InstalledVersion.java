@@ -2,8 +2,9 @@
  * Created by JFormDesigner on Tue Dec 21 03:40:01 MST 2021
  */
 
-package xyz.wagyourtail.launcher.swing.windows.profile.create.versions;
+package xyz.wagyourtail.launcher.swing.screen.profile.create.versions;
 
+import xyz.wagyourtail.launcher.LauncherBase;
 import xyz.wagyourtail.launcher.minecraft.data.VersionManifest;
 import xyz.wagyourtail.launcher.minecraft.version.Version;
 

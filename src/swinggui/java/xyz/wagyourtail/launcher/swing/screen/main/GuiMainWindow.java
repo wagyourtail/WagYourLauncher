@@ -2,11 +2,17 @@
  * Created by JFormDesigner on Mon Dec 20 05:10:54 MST 2021
  */
 
-package xyz.wagyourtail.launcher.swing.windows.main;
+package xyz.wagyourtail.launcher.swing.screen.main;
 
 import xyz.wagyourtail.launcher.LauncherBase;
-import xyz.wagyourtail.launcher.swing.windows.login.GuiLogin;
-import xyz.wagyourtail.launcher.swing.windows.profile.create.GuiNewProfile;
+import xyz.wagyourtail.launcher.gui.screen.MainScreen;
+import xyz.wagyourtail.launcher.gui.screen.login.AddAccountScreen;
+import xyz.wagyourtail.launcher.gui.screen.profile.ProfileCreateScreen;
+import xyz.wagyourtail.launcher.gui.screen.profile.ProfileScreen;
+import xyz.wagyourtail.launcher.swing.screen.BaseSwingScreen;
+import xyz.wagyourtail.launcher.swing.screen.login.GuiLogin;
+import xyz.wagyourtail.launcher.swing.screen.profile.GuiProfile;
+import xyz.wagyourtail.launcher.swing.screen.profile.create.GuiNewProfile;
 import xyz.wagyourtail.launcher.auth.common.GetProfile;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 
@@ -29,8 +35,9 @@ import java.util.List;
 /**
  * @author wagyourtail
  */
-public class GuiMainWindow extends JFrame {
+public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
     private final LauncherBase launcher;
+    private final Map<String, GuiProfile> profileMap = new HashMap<>();
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel panel3;
@@ -49,8 +56,8 @@ public class GuiMainWindow extends JFrame {
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     public GuiMainWindow(LauncherBase launcher) throws IOException {
+        super(launcher, null);
         this.launcher = launcher;
-        this.setVisible(true);
     }
 
     private void profileView(ActionEvent e) {
@@ -59,14 +66,11 @@ public class GuiMainWindow extends JFrame {
         if (profile == null) {
             return;
         }
-        launcher.getGuiProfile(profile).setVisible(true);
+        ((GuiProfile) getProfileScreen(profile)).setVisible(true);
     }
 
     private void newProfile(ActionEvent e) {
-        if (launcher.newProfile == null) {
-            launcher.newProfile = new GuiNewProfile(launcher);
-        }
-        launcher.newProfile.setVisible(true);
+        openAddProfile();
     }
 
     public void profileTreeValueChanged(TreeSelectionEvent e) {
@@ -361,22 +365,44 @@ public class GuiMainWindow extends JFrame {
     }
 
     private void launch(Profile profile, boolean offline) {
-        launcher.getGuiProfile(profile).launch(offline);
+        getProfileScreen(profile).launch(offline);
     }
 
     private void newAccount(ActionEvent e) {
-        if (launcher.login != null) {
-            launcher.login.setVisible(true);
-            return;
-        }
-        launcher.login = new GuiLogin(launcher);
-        launcher.login.setVisible(true);
+        openAddAccount();
     }
 
     public GetProfile.MCProfile getCurrentAccount() throws IOException {
         AccountLabel label = ((AccountLabel) accounts.getSelectedItem());
         if (label == null) throw new IOException("No account selected");
         return label.profile;
+    }
+
+    @Override
+    public ProfileScreen getProfileScreen(Profile profile) {
+        GuiProfile p = profileMap.compute(profile.key(), (k, v) -> {
+            if (v == null) {
+                return new GuiProfile(launcher, getMainWindow(), profile);
+            } else {
+                v.editProfile(profile);
+                return v;
+            }
+        });
+        return p;
+    }
+
+    @Override
+    public ProfileCreateScreen openAddProfile() {
+        GuiNewProfile p = new GuiNewProfile(launcher, getMainWindow());
+        p.setVisible(true);
+        return p;
+    }
+
+    @Override
+    public AddAccountScreen openAddAccount() {
+        GuiLogin l = new GuiLogin(launcher, getMainWindow());
+        l.setVisible(true);
+        return l;
     }
 
     public record AccountLabel(GetProfile.MCProfile profile, Image image) {

@@ -40,7 +40,7 @@ public class ConsoleProfileScreen extends ConsoleScreen implements ProfileScreen
 
     @Override
     public void editProfile(Profile newProfile) {
-        getLauncher().profiles.modifyProfile(profile, newProfile);
+        ProfileScreen.super.editProfile(newProfile);
         this.profile = newProfile;
     }
 

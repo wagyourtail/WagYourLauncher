@@ -146,10 +146,10 @@ public class ProfileManager {
         pb.directory(gameDir.toFile());
         Process p = pb.start();
         runningLock.put(profile, p);
-        launcher.refreshLaunchedProfiles();
+        launcher.refreshProfiles();
         p.onExit().thenRun(() -> {
             runningLock.remove(profile);
-            launcher.refreshLaunchedProfiles();
+            launcher.refreshProfiles();
         });
         profile.pipeOutput(launcher, p, profileLogger);
     }

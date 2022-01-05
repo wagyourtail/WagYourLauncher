@@ -1,4 +1,4 @@
-package xyz.wagyourtail.launcher.swing.windows.profile.create.versions;
+package xyz.wagyourtail.launcher.swing.screen.profile.create.versions;
 
 import javax.swing.*;
 

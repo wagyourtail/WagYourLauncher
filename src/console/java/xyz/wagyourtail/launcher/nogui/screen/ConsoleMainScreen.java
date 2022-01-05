@@ -21,7 +21,7 @@ import java.util.function.Function;
 
 public class ConsoleMainScreen extends ConsoleScreen implements MainScreen {
 
-    public ConsoleMainScreen(LauncherBase launcher) throws InterruptedException {
+    public ConsoleMainScreen(LauncherBase launcher) {
         super(launcher, null, "");
         commandManager.registerCommand("listprofiles", "", "list available profiles", this::listProfiles);
         commandManager.registerCommand("selectprofile", "<id>", "select a profile", this::selectProfile);
@@ -29,7 +29,6 @@ public class ConsoleMainScreen extends ConsoleScreen implements MainScreen {
         commandManager.registerCommand("selectuser", "<name>", "select a user", this::selectAuthUser);
         commandManager.registerCommand("addprofile", "", "add a profile", (Function<String[], Boolean>) this::openAddProfile);
         commandManager.registerCommand("login", "", "login", this::login);
-        init();
     }
 
     private boolean listProfiles(String[] args) {
@@ -58,7 +57,7 @@ public class ConsoleMainScreen extends ConsoleScreen implements MainScreen {
             return false;
         }
         try {
-            ((ConsoleProfileScreen) openProfile(getLauncher().profiles.getAllProfiles().get(args[0]))).init();
+            ((ConsoleProfileScreen) getProfileScreen(getLauncher().profiles.getAllProfiles().get(args[0]))).init();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -94,7 +93,7 @@ public class ConsoleMainScreen extends ConsoleScreen implements MainScreen {
     }
 
     @Override
-    public ProfileScreen openProfile(Profile profile) {
+    public ProfileScreen getProfileScreen(Profile profile) {
         return new ConsoleProfileScreen(getLauncher(), getMainWindow(), profile);
     }
 

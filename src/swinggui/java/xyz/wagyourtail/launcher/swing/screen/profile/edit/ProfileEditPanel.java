@@ -2,7 +2,9 @@
  * Created by JFormDesigner on Fri Dec 24 10:04:15 MST 2021
  */
 
-package xyz.wagyourtail.launcher.swing.windows.profile.edit;
+package xyz.wagyourtail.launcher.swing.screen.profile.edit;
+
+import xyz.wagyourtail.launcher.LauncherBase;
 
 import java.awt.event.*;
 
