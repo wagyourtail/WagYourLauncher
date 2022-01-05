@@ -33,7 +33,7 @@ public class VersionManifest {
         return Optional.ofNullable(json.get(key));
     }
 
-    private static void populateVersions() throws IOException {
+    public static void refresh() throws IOException {
         String data = new String(getManifestURL().openStream().readAllBytes(), StandardCharsets.UTF_8);
         versions = new LinkedHashMap<>();
 
@@ -63,28 +63,28 @@ public class VersionManifest {
 
     public static Version getVersion(String byID) throws IOException {
         if (versions == null) {
-                populateVersions();
+                refresh();
         }
         return versions.get(byID);
     }
 
     public static Version getLatestRelease() throws IOException {
         if (versions == null || latestRelease == null) {
-            populateVersions();
+            refresh();
         }
         return versions.get(latestRelease);
     }
 
     public static Version getLatestSnapshot() throws IOException {
         if (versions == null || latestSnapshot == null) {
-            populateVersions();
+            refresh();
         }
         return versions.get(latestSnapshot);
     }
 
     public static Map<String, Version> getAllVersions() throws IOException {
         if (versions == null) {
-            populateVersions();
+            refresh();
         }
         return new LinkedHashMap<>(versions);
     }

@@ -4,6 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import xyz.wagyourtail.launcher.LauncherBase;
+import xyz.wagyourtail.launcher.versions.BaseVersionProvider;
+import xyz.wagyourtail.launcher.versions.InstalledVersions;
+import xyz.wagyourtail.launcher.versions.VanillaVersions;
 import xyz.wagyourtail.notlog4j.Logger;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 import xyz.wagyourtail.launcher.minecraft.version.Version;
@@ -24,8 +27,14 @@ public class ProfileManager {
 
     protected final Map<Profile, Process> runningLock = new HashMap<>();
 
+    public final BaseVersionProvider<?>[] versionProviders;
+
     public ProfileManager(LauncherBase launcher) {
         this.launcher = launcher;
+        versionProviders = new BaseVersionProvider[] {
+            new InstalledVersions(launcher),
+            new VanillaVersions(launcher)
+        };
     }
 
     protected static Optional<JsonElement> get(JsonObject json, String key) {
