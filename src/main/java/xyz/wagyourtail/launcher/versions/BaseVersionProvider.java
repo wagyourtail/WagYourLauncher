@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface BaseVersionProvider<T extends BaseVersionProvider.BaseVersionData> {
 
+    String getName();
+
     boolean hasIcons();
 
     String[] getTableHeaders();
@@ -18,11 +20,15 @@ public interface BaseVersionProvider<T extends BaseVersionProvider.BaseVersionDa
 
     void refreshVersions() throws IOException;
 
+    BaseVersionData byId(String id);
+
     String[] versionFilters();
 
     interface BaseVersionData {
 
         URL getIconUrl();
+
+        String getId();
 
         String[] getTableParts();
 

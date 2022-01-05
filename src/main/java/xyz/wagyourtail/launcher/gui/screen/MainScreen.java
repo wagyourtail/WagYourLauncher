@@ -1,5 +1,7 @@
 package xyz.wagyourtail.launcher.gui.screen;
 
+import xyz.wagyourtail.launcher.gui.screen.login.AddAccountScreen;
+import xyz.wagyourtail.launcher.gui.screen.profile.ProfileCreateScreen;
 import xyz.wagyourtail.launcher.gui.screen.profile.ProfileScreen;
 import xyz.wagyourtail.launcher.minecraft.profile.Profile;
 
@@ -13,11 +15,9 @@ import java.security.spec.InvalidKeySpecException;
 public interface MainScreen extends Screen {
      ProfileScreen openProfile(Profile profile);
 
-    void openGlobalSettings();
+    ProfileCreateScreen openAddProfile();
 
-    void openAddProfile();
-
-    void openAddAccount();
+    AddAccountScreen openAddAccount();
 
     default void launchProfile(Profile profile, boolean offline) {
         openProfile(profile).launch(offline);

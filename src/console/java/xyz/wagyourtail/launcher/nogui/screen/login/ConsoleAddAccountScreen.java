@@ -7,14 +7,34 @@ import xyz.wagyourtail.launcher.gui.screen.login.UsernamePasswordScreen;
 import xyz.wagyourtail.launcher.nogui.screen.ConsoleScreen;
 import xyz.wagyourtail.notlog4j.Logger;
 
+import java.util.Scanner;
+
 public class ConsoleAddAccountScreen extends ConsoleScreen implements AddAccountScreen {
-    protected ConsoleAddAccountScreen(LauncherBase launcher, MainScreen mainScreen) {
+    public ConsoleAddAccountScreen(LauncherBase launcher, MainScreen mainScreen) {
         super(launcher, mainScreen, "Add Account");
+        init();
+    }
+
+    @Override
+    public void init() {
+        String[] providers = getProviders();
+        getLogger().info("Available providers:");
+        for (int i = 0; i < providers.length; i++) {
+            getLogger().info("  " + (i + 1) + ". " + providers[i]);
+        }
+        Scanner scanner = new Scanner(System.in);
+        getLogger().info("Enter provider number:");
+        int provider = scanner.nextInt();
+        if (provider < 1 || provider > providers.length) {
+            getLogger().info("Invalid provider number");
+            return;
+        }
+        runLogin(providers[provider - 1]);
     }
 
     @Override
     public Logger getLogger() {
-        return null;
+        return getLauncher().getLogger();
     }
 
     @Override
@@ -24,7 +44,12 @@ public class ConsoleAddAccountScreen extends ConsoleScreen implements AddAccount
 
     @Override
     public UsernamePasswordScreen getUsernamePassword() {
-        return null;
+        try {
+            return new ConsoleUsernamePasswordScreen(getLauncher(), getMainWindow());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

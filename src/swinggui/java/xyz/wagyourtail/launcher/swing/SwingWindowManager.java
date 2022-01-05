@@ -2,8 +2,6 @@ package xyz.wagyourtail.launcher.swing;
 
 import xyz.wagyourtail.launcher.LauncherBase;
 import xyz.wagyourtail.launcher.gui.screen.profile.ProfileScreen;
-import xyz.wagyourtail.launcher.minecraft.profile.Profile;
-import xyz.wagyourtail.launcher.swing.windows.profile.GuiProfile;
 import xyz.wagyourtail.util.OSUtils;
 
 import javax.swing.*;

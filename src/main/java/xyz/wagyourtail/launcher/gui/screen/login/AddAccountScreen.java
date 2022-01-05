@@ -14,6 +14,10 @@ public interface AddAccountScreen extends Screen {
      */
     UsernamePasswordScreen getUsernamePassword();
 
+    default String[] getProviders() {
+        return getLauncher().auth.authProviders.keySet().toArray(new String[0]);
+    }
+
     /**
      * @param provider string name of the provider
      */

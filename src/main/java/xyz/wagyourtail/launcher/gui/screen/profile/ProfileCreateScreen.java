@@ -16,7 +16,13 @@ public interface ProfileCreateScreen extends Screen {
     BaseVersionProvider.BaseVersionData getSelectedVersion();
 
     default Profile createProfile() throws IOException {
-        String lastVersionId = getSelectedVersion().provide();
+        BaseVersionProvider.BaseVersionData version = getSelectedVersion();
+
+        if (version == null) {
+            throw new IOException("No version selected");
+        }
+
+        String lastVersionId = version.provide();
 
         String id = UUID.randomUUID().toString();
         String name = getName();

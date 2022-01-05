@@ -6,9 +6,10 @@ import xyz.wagyourtail.launcher.gui.screen.Screen;
 import xyz.wagyourtail.launcher.nogui.CommandManager;
 
 import java.util.Scanner;
+import java.util.function.Consumer;
 
 public class ConsoleScreen implements Screen {
-    private final CommandManager commandManager = new CommandManager();
+    protected final CommandManager commandManager = new CommandManager();
     private final LauncherBase launcher;
     private final MainScreen mainScreen;
     private final String screenName;
@@ -67,6 +68,31 @@ public class ConsoleScreen implements Screen {
     public static String rPadTo(String s, int len) {
         while (s.length() < len) s += " ";
         return s;
+    }
+
+    public void tabulate(String[] header, String[][] data, Consumer<String> log) {
+        int[] tableSizes = new int[header.length];
+        for (int i = 0; i < header.length; i++) {
+            tableSizes[i] = header[i].length();
+            for (int j = 0; j < data.length; j++) {
+                tableSizes[i] = Math.max(tableSizes[i], data[j][i].length());
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < header.length; i++) {
+            sb.append(rPadTo(header[i], tableSizes[i]));
+            if (i < header.length - 1) sb.append("\t");
+        }
+        log.accept(sb.toString());
+        log.accept(dashes(sb.length()));
+        for (int i = 0; i < data.length; i++) {
+            sb = new StringBuilder();
+            for (int j = 0; j < data[i].length; j++) {
+                sb.append(rPadTo(data[i][j], tableSizes[j]));
+                if (j < data[i].length - 1) sb.append("\t");
+            }
+            log.accept(sb.toString());
+        }
     }
 
 }

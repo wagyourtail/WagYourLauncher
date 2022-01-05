@@ -2,6 +2,7 @@ package xyz.wagyourtail.launcher.nogui;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class CommandManager {
@@ -15,6 +16,10 @@ public class CommandManager {
     public CommandManager registerCommand(String name, String usage, String desc, Function<String[], Boolean> command) {
         commands.put(name, new Command(name, usage, desc, command));
         return this;
+    }
+
+    public CommandManager registerCommand(String name, String usage, String desc, Consumer<String[]> command) {
+        return registerCommand(name, usage, desc, s -> {command.accept(s); return true;});
     }
 
     public boolean run(String command) {

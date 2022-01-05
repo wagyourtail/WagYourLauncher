@@ -1,4 +1,7 @@
 package xyz.wagyourtail.launcher.gui.screen;
 
-public interface KeystorePasswordScreen extends Screen{
+import java.util.function.Consumer;
+
+public interface KeystorePasswordScreen extends Screen {
+    void then(Consumer<char[]> r);
 }

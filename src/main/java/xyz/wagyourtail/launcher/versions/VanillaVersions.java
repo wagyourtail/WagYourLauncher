@@ -7,18 +7,19 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class VanillaVersions implements BaseVersionProvider<VanillaVersions.VanillaVersion> {
     private final LauncherBase launcher;
-    private final Path versionsPath;
-    private final List<VanillaVersion> versions = new ArrayList<>();
+    private final Map<String, VanillaVersion> versions = new HashMap<>();
 
     public VanillaVersions(LauncherBase launcher) {
         this.launcher = launcher;
-        versionsPath = launcher.minecraftPath.resolve("versions");
+    }
+
+    @Override
+    public String getName() {
+        return "Vanilla";
     }
 
     @Override
@@ -33,19 +34,19 @@ public class VanillaVersions implements BaseVersionProvider<VanillaVersions.Vani
 
     @Override
     public List<VanillaVersion> getVersions() {
-        return versions;
+        return List.copyOf(versions.values());
     }
 
     @Override
     public VanillaVersion getLatestStable() throws IOException {
         VersionManifest.Version latest = VersionManifest.getLatestRelease();
-        return versions.stream().filter(e -> e.version.equals(latest)).findFirst().orElse(null);
+        return versions.values().stream().filter(e -> e.version.equals(latest)).findFirst().orElse(null);
     }
 
     @Override
     public VanillaVersion getLatestSnapshot() throws IOException {
         VersionManifest.Version latest = VersionManifest.getLatestSnapshot();
-        return versions.stream().filter(e -> e.version.equals(latest)).findFirst().orElse(null);
+        return versions.values().stream().filter(e -> e.version.equals(latest)).findFirst().orElse(null);
     }
 
     @Override
@@ -53,8 +54,13 @@ public class VanillaVersions implements BaseVersionProvider<VanillaVersions.Vani
         versions.clear();
         VersionManifest.refresh();
         for (VersionManifest.Version version : VersionManifest.getAllVersions().values()) {
-            versions.add(new VanillaVersion(version));
+            versions.put(version.id(), new VanillaVersion(version));
         }
+    }
+
+    @Override
+    public BaseVersionData byId(String id) {
+        return null;
     }
 
     @Override
@@ -67,6 +73,11 @@ public class VanillaVersions implements BaseVersionProvider<VanillaVersions.Vani
         @Override
         public URL getIconUrl() {
             return null;
+        }
+
+        @Override
+        public String getId() {
+            return version.id();
         }
 
         @Override

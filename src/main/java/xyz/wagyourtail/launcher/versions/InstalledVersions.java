@@ -9,18 +9,21 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class InstalledVersions implements BaseVersionProvider<InstalledVersions.InstalledVersion> {
     private final LauncherBase launcher;
     private final Path versionsPath;
-    private final List<InstalledVersion> versions = new ArrayList<>();
+    private final Map<String, InstalledVersion> versions = new HashMap<>();
 
     public InstalledVersions(LauncherBase launcher) {
         this.launcher = launcher;
         versionsPath = launcher.minecraftPath.resolve("versions");
+    }
+
+    @Override
+    public String getName() {
+        return "Installed";
     }
 
     @Override
@@ -35,12 +38,12 @@ public class InstalledVersions implements BaseVersionProvider<InstalledVersions.
 
     @Override
     public List<InstalledVersion> getVersions() {
-        return versions;
+        return List.copyOf(versions.values());
     }
 
     @Override
     public InstalledVersion getLatestStable() {
-        return versions.stream().filter(e -> e.version.type().equals("release")).min((a, b) -> {
+        return versions.values().stream().filter(e -> e.version.type().equals("release")).min((a, b) -> {
             if (SemVerUtils.isSemVer(a.version.id())) {
                 if (SemVerUtils.isSemVer(b.version.id())) {
                     return SemVerUtils.SemVer.create(a.version.id())
@@ -58,7 +61,7 @@ public class InstalledVersions implements BaseVersionProvider<InstalledVersions.
 
     @Override
     public InstalledVersion getLatestSnapshot() {
-        return versions.stream().min((a, b) -> {
+        return versions.values().stream().min((a, b) -> {
             if (SemVerUtils.isSemVer(a.version.id())) {
                 if (SemVerUtils.isSemVer(b.version.id())) {
                     return SemVerUtils.SemVer.create(a.version.id())
@@ -83,11 +86,16 @@ public class InstalledVersions implements BaseVersionProvider<InstalledVersions.
         for (Path p : Files.list(versionsPath).toList()) {
             try {
                 Version version = Version.resolve(launcher, p.getFileName().toString());
-                versions.add(new InstalledVersion(version));
+                versions.put(version.id(), new InstalledVersion(version));
             } catch (IOException e) {
                 launcher.error("Failed to load version " + p.getFileName().toString(), e);
             }
         }
+    }
+
+    @Override
+    public BaseVersionData byId(String id) {
+        return versions.get(id);
     }
 
     @Override
@@ -103,6 +111,11 @@ public class InstalledVersions implements BaseVersionProvider<InstalledVersions.
         @Override
         public URL getIconUrl() {
             return null;
+        }
+
+        @Override
+        public String getId() {
+            return version.id();
         }
 
         @Override
