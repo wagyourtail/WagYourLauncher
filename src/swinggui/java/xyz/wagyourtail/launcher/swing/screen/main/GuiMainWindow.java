@@ -239,9 +239,10 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
         for (int i = 0; i < root.getChildCount(); i++) {
             profileTree.expandPath(new TreePath(root).pathByAddingChild(root.getChildAt(i)));
         }
+        profileTreeValueChanged(null);
     }
 
-    public TreeModel getProfileTreeModel() throws IOException {
+    public TreeModel getProfileTreeModel() {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Profiles");
 
         DefaultMutableTreeNode vanilla = new DefaultMutableTreeNode("Main Directory");
@@ -380,8 +381,8 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
     }
 
     @Override
-    public ProfileScreen getProfileScreen(Profile profile) {
-        GuiProfile p = profileMap.compute(profile.key(), (k, v) -> {
+    public synchronized ProfileScreen getProfileScreen(Profile profile) {
+        return profileMap.compute(profile.key(), (k, v) -> {
             if (v == null) {
                 return new GuiProfile(launcher, getMainWindow(), profile);
             } else {
@@ -389,7 +390,6 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
                 return v;
             }
         });
-        return p;
     }
 
     @Override
@@ -397,6 +397,12 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
         GuiNewProfile p = new GuiNewProfile(launcher, getMainWindow());
         p.setVisible(true);
         return p;
+    }
+
+    public synchronized void refreshProfileScreens() {
+        for (GuiProfile value : profileMap.values()) {
+            value.updateLaunched();
+        }
     }
 
     @Override

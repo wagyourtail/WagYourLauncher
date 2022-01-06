@@ -1,7 +1,6 @@
 package xyz.wagyourtail.launcher.swing;
 
 import xyz.wagyourtail.launcher.LauncherBase;
-import xyz.wagyourtail.launcher.gui.screen.profile.ProfileScreen;
 import xyz.wagyourtail.launcher.swing.screen.keystore.GuiKeystorePassword;
 import xyz.wagyourtail.launcher.swing.screen.main.GuiMainWindow;
 import xyz.wagyourtail.util.OSUtils;
@@ -72,6 +71,7 @@ public class SwingWindowManager extends LauncherBase {
     public void refreshProfiles() {
         try {
             ((GuiMainWindow) this.mainWindow).populateProfiles();
+            ((GuiMainWindow) this.mainWindow).refreshProfileScreens();
         } catch (IOException e) {
             error("Failed to refresh profiles", e);
         }
