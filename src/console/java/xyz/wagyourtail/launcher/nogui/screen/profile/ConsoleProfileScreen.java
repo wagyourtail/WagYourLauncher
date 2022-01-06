@@ -14,6 +14,7 @@ public class ConsoleProfileScreen extends ConsoleScreen implements ProfileScreen
 
     public ConsoleProfileScreen(LauncherBase launcher, MainScreen mainScreen, Profile profile) {
         super(launcher, mainScreen, "Profile: " + profile.key());
+        this.profile = profile;
         commandManager.registerCommand("launch", "", "Launches the profile", (Function<String[], Boolean>) this::launch);
         commandManager.registerCommand("launchoffline", "", "Launches the profile in offline mode", (Function<String[], Boolean>) this::launch);
     }

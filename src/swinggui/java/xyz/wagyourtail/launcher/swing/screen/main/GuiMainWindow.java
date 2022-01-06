@@ -91,6 +91,12 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
 
     }
 
+    private void accounts(ActionEvent e) {
+        if (accounts.getSelectedItem() != null) {
+            getLauncher().auth.setSelectedProfile(((AccountLabel)accounts.getSelectedItem()).profile);
+        }
+    }
+
     public void initComponents() throws IOException {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         ResourceBundle bundle = ResourceBundle.getBundle("lang.lang");
@@ -138,6 +144,7 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
                 panel4.add(newAccount);
 
                 //---- accounts ----
+                accounts.addActionListener(e -> accounts(e));
                 populateAccounts();
                 panel4.add(accounts);
             }
@@ -298,9 +305,11 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
     }
 
     public void populateAccounts() throws IOException {
+        String selectedProfile = getLauncher().auth.getSelectedProfile();
         DefaultComboBoxModel<AccountLabel> model = new DefaultComboBoxModel<>();
         accounts.removeAllItems();
         List<String> sortedAccounts = new ArrayList<>(launcher.auth.getRegisteredUsers().keySet());
+        AccountLabel selected = null;
         sortedAccounts.sort(String::compareToIgnoreCase);
         for (String account : sortedAccounts) {
             GetProfile.MCProfile profile;
@@ -328,10 +337,17 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
                     }
                 }
             }
-            model.addElement(new AccountLabel(profile, head.getScaledInstance(20, 20, Image.SCALE_FAST)));
+            AccountLabel label = new AccountLabel(profile, head.getScaledInstance(20, 20, Image.SCALE_FAST));
+            if (profile.name().equals(selectedProfile)) {
+                selected = label;
+            }
+            model.addElement(label);
         }
         accounts.setModel(model);
         accounts.setRenderer(new AccoutLabelRenderer());
+        if (selected != null) {
+            accounts.setSelectedItem(selected);
+        }
     }
 
     private void launch(ActionEvent e) {
@@ -372,12 +388,6 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
 
     private void newAccount(ActionEvent e) {
         openAddAccount();
-    }
-
-    public GetProfile.MCProfile getCurrentAccount() throws IOException {
-        AccountLabel label = ((AccountLabel) accounts.getSelectedItem());
-        if (label == null) throw new IOException("No account selected");
-        return label.profile;
     }
 
     @Override

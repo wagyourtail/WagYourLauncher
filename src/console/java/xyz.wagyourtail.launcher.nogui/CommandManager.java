@@ -30,7 +30,9 @@ public class CommandManager {
         String cmd = parts[0];
         if (commands.containsKey(cmd)) {
             Command c = commands.get(cmd);
-            return c.action.apply(parts);
+            String[] args = new String[parts.length - 1];
+            System.arraycopy(parts, 1, args, 0, parts.length - 1);
+            return c.action.apply(args);
         } else {
             System.err.println("Unknown command: " + cmd);
         }

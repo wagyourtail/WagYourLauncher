@@ -50,11 +50,11 @@ public class ConsoleMainScreen extends ConsoleScreen implements MainScreen {
     private boolean selectProfile(String[] args) {
         if (args.length != 1) {
             getLauncher().getLogger().error("Usage: selectprofile <id>");
-            return false;
+            return true;
         }
         if (!getLauncher().profiles.getAllProfiles().containsKey(args[0])) {
             getLauncher().getLogger().error("Profile " + args[0] + " does not exist");
-            return false;
+            return true;
         }
         try {
             ((ConsoleProfileScreen) getProfileScreen(getLauncher().profiles.getAllProfiles().get(args[0]))).init();
@@ -73,11 +73,11 @@ public class ConsoleMainScreen extends ConsoleScreen implements MainScreen {
     private boolean selectAuthUser(String[] args) {
         if (args.length != 1) {
             getLauncher().getLogger().error("Usage: selectuser <name>");
-            return false;
+            return true;
         }
         if (!getLauncher().auth.getRegisteredUsers().containsKey(args[0])) {
             getLauncher().getLogger().error("User " + args[0] + " does not exist");
-            return false;
+            return true;
         }
         try {
             getLauncher().auth.setSelectedProfile(getLauncher().auth.getProfile(getLauncher().getLogger(), args[0], true));
