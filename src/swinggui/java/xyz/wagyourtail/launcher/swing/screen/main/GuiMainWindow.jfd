@@ -1,348 +1,99 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<java version="11.0.13" class="java.beans.XMLDecoder">
- <object class="com.jformdesigner.model.FormModel">
-  <void method="setProperty">
-   <string>i18n.autoExternalize</string>
-   <boolean>true</boolean>
-  </void>
-  <void method="setProperty">
-   <string>i18n.bundlePackage</string>
-   <string>lang</string>
-  </void>
-  <void method="setProperty">
-   <string>i18n.bundleName</string>
-   <string>lang</string>
-  </void>
-  <void method="setProperty">
-   <string>i18n.keyPrefix</string>
-   <string>GuiMainWindow</string>
-  </void>
-  <void property="contentType">
-   <string>form/swing</string>
-  </void>
-  <void property="root">
-   <object class="com.jformdesigner.model.FormRoot">
-    <void method="add">
-     <object class="com.jformdesigner.model.FormWindow">
-      <string>javax.swing.JFrame</string>
-      <object class="com.jformdesigner.model.FormLayoutManager">
-       <class>org.jdesktop.layout.GroupLayout</class>
-       <void method="setProperty">
-        <string>$horizontalGroup</string>
-        <string>par l {seq t {par l {comp panel3::::771:x, comp panel5:::::x}, space :::p}}</string>
-       </void>
-       <void method="setProperty">
-        <string>$verticalGroup</string>
-        <string>par l {seq l {space :::p, comp panel3:::p::p, space :::p, comp panel5:::::x, space :::p}}</string>
-       </void>
-      </object>
-      <void method="setProperty">
-       <string>title</string>
-       <string>WagYourLauncher v1.0</string>
-      </void>
-      <void method="add">
-       <object class="com.jformdesigner.model.FormContainer">
-        <string>javax.swing.JPanel</string>
-        <object class="com.jformdesigner.model.FormLayoutManager">
-         <class>javax.swing.BoxLayout</class>
-        </object>
-        <void property="name">
-         <string>panel3</string>
-        </void>
-        <void method="add">
-         <object class="com.jformdesigner.model.FormContainer">
-          <string>javax.swing.JPanel</string>
-          <object class="com.jformdesigner.model.FormLayoutManager">
-           <class>java.awt.FlowLayout</class>
-           <void method="setProperty">
-            <string>alignment</string>
-            <int>0</int>
-           </void>
-          </object>
-          <void property="name">
-           <string>panel1</string>
-          </void>
-          <void method="add">
-           <object class="com.jformdesigner.model.FormComponent">
-            <string>javax.swing.JButton</string>
-            <void method="setProperty">
-             <string>text</string>
-             <object class="com.jformdesigner.model.FormMessage">
-              <null/>
-              <string>GuiMainWindow.newProfile.text</string>
-             </object>
-            </void>
-            <void property="name">
-             <string>newProfile</string>
-            </void>
-            <void method="addEvent">
-             <object class="com.jformdesigner.model.FormEvent">
-              <string>java.awt.event.ActionListener</string>
-              <string>actionPerformed</string>
-              <string>newProfile</string>
-              <boolean>true</boolean>
-             </object>
-            </void>
-           </object>
-          </void>
-         </object>
-        </void>
-        <void method="add">
-         <object class="com.jformdesigner.model.FormContainer">
-          <string>javax.swing.JPanel</string>
-          <object class="com.jformdesigner.model.FormLayoutManager">
-           <class>java.awt.FlowLayout</class>
-           <void method="setProperty">
-            <string>alignment</string>
-            <int>2</int>
-           </void>
-          </object>
-          <void property="name">
-           <string>panel4</string>
-          </void>
-          <void method="add">
-           <object class="com.jformdesigner.model.FormComponent" id="FormComponent0">
-            <string>javax.swing.JButton</string>
-            <void method="setProperty">
-             <string>text</string>
-             <object class="com.jformdesigner.model.FormMessage">
-              <null/>
-              <string>GuiMainWindow.newaccount.text</string>
-             </object>
-            </void>
-            <void property="name">
-             <string>newaccount</string>
-            </void>
-            <void method="auxiliary">
-             <void method="setProperty">
-              <string>JavaCodeGenerator.variableName</string>
-              <string>newAccount</string>
-             </void>
-            </void>
-            <void method="addEvent">
-             <object class="com.jformdesigner.model.FormEvent">
-              <string>java.awt.event.ActionListener</string>
-              <string>actionPerformed</string>
-              <string>newAccount</string>
-              <boolean>true</boolean>
-             </object>
-            </void>
-           </object>
-          </void>
-          <void method="add">
-           <object class="com.jformdesigner.model.FormComponent" id="FormComponent1">
-            <string>javax.swing.JComboBox</string>
-            <void property="name">
-             <string>accounts</string>
-            </void>
-            <void method="auxiliary">
-             <void method="setProperty">
-              <string>JavaCodeGenerator.postInitCode</string>
-              <string>populateAccounts();</string>
-             </void>
-            </void>
-           </object>
-          </void>
-         </object>
-        </void>
-       </object>
-      </void>
-      <void method="add">
-       <object class="com.jformdesigner.model.FormContainer">
-        <string>javax.swing.JPanel</string>
-        <object class="com.jformdesigner.model.FormLayoutManager">
-         <class>org.jdesktop.layout.GroupLayout</class>
-         <void method="setProperty">
-          <string>$horizontalGroup</string>
-          <string>par l {seq l {space :p:12:p, comp scrollPane1::::630:x, space :::p, comp panel2:::p::p, space :::p}}</string>
-         </void>
-         <void method="setProperty">
-          <string>$verticalGroup</string>
-          <string>par l {seq t {par l {comp panel2::::356:x, comp scrollPane1::::0:x}, space :::p}}</string>
-         </void>
-        </object>
-        <void property="name">
-         <string>panel5</string>
-        </void>
-        <void method="add">
-         <object class="com.jformdesigner.model.FormContainer">
-          <string>javax.swing.JScrollPane</string>
-          <object class="com.jformdesigner.model.FormLayoutManager">
-           <class>javax.swing.JScrollPane</class>
-          </object>
-          <void property="name">
-           <string>scrollPane1</string>
-          </void>
-          <void method="add">
-           <object class="com.jformdesigner.model.FormComponent" id="FormComponent2">
-            <string>javax.swing.JTree</string>
-            <void property="name">
-             <string>profileTree</string>
-            </void>
-            <void method="auxiliary">
-             <void method="setProperty">
-              <string>JavaCodeGenerator.postInitCode</string>
-              <string>populateProfiles();</string>
-             </void>
-            </void>
-            <void method="addEvent">
-             <object class="com.jformdesigner.model.FormEvent">
-              <string>javax.swing.event.TreeSelectionListener</string>
-              <string>valueChanged</string>
-              <string>profileTreeValueChanged</string>
-              <boolean>true</boolean>
-             </object>
-            </void>
-           </object>
-          </void>
-         </object>
-        </void>
-        <void method="add">
-         <object class="com.jformdesigner.model.FormContainer">
-          <string>javax.swing.JPanel</string>
-          <object class="com.jformdesigner.model.FormLayoutManager">
-           <class>java.awt.GridBagLayout</class>
-           <void method="setProperty">
-            <string>$columnSpecs</string>
-            <string>0</string>
-           </void>
-           <void method="setProperty">
-            <string>$rowSpecs</string>
-            <string>0, 0, 0</string>
-           </void>
-           <void method="setProperty">
-            <string>$hGap</string>
-            <int>5</int>
-           </void>
-           <void method="setProperty">
-            <string>$vGap</string>
-            <int>5</int>
-           </void>
-           <void method="setProperty">
-            <string>$alignLeft</string>
-            <boolean>true</boolean>
-           </void>
-           <void method="setProperty">
-            <string>$alignTop</string>
-            <boolean>true</boolean>
-           </void>
-          </object>
-          <void property="name">
-           <string>panel2</string>
-          </void>
-          <void method="add">
-           <object class="com.jformdesigner.model.FormComponent">
-            <string>javax.swing.JButton</string>
-            <void method="setProperty">
-             <string>text</string>
-             <object class="com.jformdesigner.model.FormMessage">
-              <null/>
-              <string>GuiMainWindow.launch.text</string>
-             </object>
-            </void>
-            <void property="name">
-             <string>launch</string>
-            </void>
-            <void method="addEvent">
-             <object class="com.jformdesigner.model.FormEvent">
-              <string>java.awt.event.ActionListener</string>
-              <string>actionPerformed</string>
-              <string>launch</string>
-              <boolean>true</boolean>
-             </object>
-            </void>
-           </object>
-           <object class="com.jformdesigner.model.FormLayoutConstraints">
-            <class>com.jformdesigner.runtime.GridBagConstraintsEx</class>
-           </object>
-          </void>
-          <void method="add">
-           <object class="com.jformdesigner.model.FormComponent">
-            <string>javax.swing.JButton</string>
-            <void method="setProperty">
-             <string>text</string>
-             <object class="com.jformdesigner.model.FormMessage">
-              <null/>
-              <string>GuiMainWindow.launchoffline.text</string>
-             </object>
-            </void>
-            <void property="name">
-             <string>launchoffline</string>
-            </void>
-            <void method="addEvent">
-             <object class="com.jformdesigner.model.FormEvent">
-              <string>java.awt.event.ActionListener</string>
-              <string>actionPerformed</string>
-              <string>launchoffline</string>
-              <boolean>true</boolean>
-             </object>
-            </void>
-           </object>
-           <object class="com.jformdesigner.model.FormLayoutConstraints">
-            <class>com.jformdesigner.runtime.GridBagConstraintsEx</class>
-            <void method="setProperty">
-             <string>gridy</string>
-             <int>1</int>
-            </void>
-           </object>
-          </void>
-          <void method="add">
-           <object class="com.jformdesigner.model.FormComponent">
-            <string>javax.swing.JButton</string>
-            <void method="setProperty">
-             <string>text</string>
-             <object class="com.jformdesigner.model.FormMessage">
-              <null/>
-              <string>GuiMainWindow.profileView.text</string>
-             </object>
-            </void>
-            <void property="name">
-             <string>profileView</string>
-            </void>
-            <void method="addEvent">
-             <object class="com.jformdesigner.model.FormEvent">
-              <string>java.awt.event.ActionListener</string>
-              <string>actionPerformed</string>
-              <string>profileView</string>
-              <boolean>true</boolean>
-             </object>
-            </void>
-           </object>
-           <object class="com.jformdesigner.model.FormLayoutConstraints">
-            <class>com.jformdesigner.runtime.GridBagConstraintsEx</class>
-            <void method="setProperty">
-             <string>gridy</string>
-             <int>2</int>
-            </void>
-           </object>
-          </void>
-         </object>
-        </void>
-       </object>
-      </void>
-      <void property="name">
-       <string>this</string>
-      </void>
-     </object>
-     <object class="com.jformdesigner.model.FormLayoutConstraints">
-      <null/>
-      <void method="setProperty">
-       <string>location</string>
-       <object class="java.awt.Point">
-        <int>205</int>
-        <int>90</int>
-       </object>
-      </void>
-      <void method="setProperty">
-       <string>size</string>
-       <object class="java.awt.Dimension">
-        <int>785</int>
-        <int>470</int>
-       </object>
-      </void>
-     </object>
-    </void>
-   </object>
-  </void>
- </object>
-</java>
+JFDML JFormDesigner: "7.0.5.2.410" Java: "11.0.13" encoding: "UTF-8"
+
+new FormModel {
+	"i18n.autoExternalize": true
+	"i18n.bundlePackage": "lang"
+	"i18n.bundleName": "lang"
+	"i18n.keyPrefix": "GuiMainWindow"
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {seq t {par l {comp panel3::::777:x, comp panel5:::::x}, space :::p}}"
+			"$verticalGroup": "par l {seq l {space :::p, comp panel3:::p::p, space :::p, comp panel5:::::x, space :::p}}"
+		} ) {
+			name: "this"
+			"title": "WagYourLauncher v1.0"
+			"defaultCloseOperation": 2
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+				name: "panel3"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
+					"alignment": 0
+				} ) {
+					name: "panel1"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "newProfile"
+						"text": new FormMessage( null, "GuiMainWindow.newProfile.text" )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "newProfile", true ) )
+					} )
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
+					"alignment": 2
+				} ) {
+					name: "panel4"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "newaccount"
+						"text": new FormMessage( null, "GuiMainWindow.newaccount.text" )
+						auxiliary() {
+							"JavaCodeGenerator.variableName": "newAccount"
+						}
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "newAccount", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JComboBox" ) {
+						name: "accounts"
+						auxiliary() {
+							"JavaCodeGenerator.postInitCode": "populateAccounts();"
+						}
+					} )
+				} )
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+				"$horizontalGroup": "par l {seq l {space :p:12:p, comp scrollPane1::::633:x, space :::p, comp panel2:::p::p, space :::p}}"
+				"$verticalGroup": "par l {seq t {par l {comp panel2::::377:x, comp scrollPane1::::0:x}, space :::p}}"
+			} ) {
+				name: "panel5"
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane1"
+					add( new FormComponent( "javax.swing.JTree" ) {
+						name: "profileTree"
+						auxiliary() {
+							"JavaCodeGenerator.postInitCode": "populateProfiles();"
+						}
+						addEvent( new FormEvent( "javax.swing.event.TreeSelectionListener", "valueChanged", "profileTreeValueChanged", true ) )
+					} )
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+					"$columnSpecs": "0"
+					"$rowSpecs": "0, 0, 0"
+					"$hGap": 5
+					"$vGap": 5
+					"$alignLeft": true
+					"$alignTop": true
+				} ) {
+					name: "panel2"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "launch"
+						"text": new FormMessage( null, "GuiMainWindow.launch.text" )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "launch", true ) )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "launchoffline"
+						"text": new FormMessage( null, "GuiMainWindow.launchoffline.text" )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "launchoffline", true ) )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridy": 1
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "profileView"
+						"text": new FormMessage( null, "GuiMainWindow.profileView.text" )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "profileView", true ) )
+					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+						"gridy": 2
+					} )
+				} )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 205, 90 )
+			"size": new java.awt.Dimension( 785, 470 )
+		} )
+	}
+}

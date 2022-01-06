@@ -70,6 +70,7 @@ public class GuiNewProfile extends BaseSwingScreen implements ProfileCreateScree
 
         //======== this ========
         setTitle("Create Profile");
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 

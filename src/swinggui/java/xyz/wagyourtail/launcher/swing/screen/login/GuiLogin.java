@@ -59,6 +59,7 @@ public class GuiLogin extends BaseSwingScreen implements AddAccountScreen {
 
         //======== this ========
         setTitle("Login");
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout(5, 5));
 

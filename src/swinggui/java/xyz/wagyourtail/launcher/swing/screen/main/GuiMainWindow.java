@@ -110,6 +110,7 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
 
         //======== this ========
         setTitle("WagYourLauncher v1.0");
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         var contentPane = getContentPane();
 
         //======== panel3 ========
@@ -191,7 +192,7 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
                 panel5Layout.createParallelGroup()
                     .addGroup(panel5Layout.createSequentialGroup()
                         .addGap(12, 12, 12)
-                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 633, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(panel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
@@ -200,7 +201,7 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
                 panel5Layout.createParallelGroup()
                     .addGroup(GroupLayout.Alignment.TRAILING, panel5Layout.createSequentialGroup()
                         .addGroup(panel5Layout.createParallelGroup()
-                            .addComponent(panel2, GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+                            .addComponent(panel2, GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
                             .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE))
                         .addContainerGap())
             );
@@ -212,7 +213,7 @@ public class GuiMainWindow extends BaseSwingScreen implements MainScreen {
             contentPaneLayout.createParallelGroup()
                 .addGroup(GroupLayout.Alignment.TRAILING, contentPaneLayout.createSequentialGroup()
                     .addGroup(contentPaneLayout.createParallelGroup()
-                        .addComponent(panel3, GroupLayout.DEFAULT_SIZE, 771, Short.MAX_VALUE)
+                        .addComponent(panel3, GroupLayout.DEFAULT_SIZE, 777, Short.MAX_VALUE)
                         .addComponent(panel5, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addContainerGap())
         );

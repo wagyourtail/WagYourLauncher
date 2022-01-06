@@ -76,6 +76,7 @@ public class GuiProfile extends BaseSwingScreen implements ProfileScreen {
 
         //======== this ========
         setTitle("Profile");
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
@@ -116,11 +117,11 @@ public class GuiProfile extends BaseSwingScreen implements ProfileScreen {
                         panel2.setLayout(panel2Layout);
                         panel2Layout.setHorizontalGroup(
                             panel2Layout.createParallelGroup()
-                                .addGap(0, 435, Short.MAX_VALUE)
+                                .addGap(0, 755, Short.MAX_VALUE)
                         );
                         panel2Layout.setVerticalGroup(
                             panel2Layout.createParallelGroup()
-                                .addGap(0, 255, Short.MAX_VALUE)
+                                .addGap(0, 435, Short.MAX_VALUE)
                         );
                     }
                     tabs.addTab(bundle.getString("GuiProfile.panel2.tab.title"), panel2);
@@ -165,6 +166,7 @@ public class GuiProfile extends BaseSwingScreen implements ProfileScreen {
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
+    @Override
     public Logger getLogger() {
         return ((LoggingTextArea) currentLogs);
     }

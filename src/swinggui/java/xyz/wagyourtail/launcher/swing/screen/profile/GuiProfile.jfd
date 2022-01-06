@@ -10,6 +10,7 @@ new FormModel {
 		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
 			"title": "Profile"
+			"defaultCloseOperation": 2
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "dialogPane"
 				"border": new javax.swing.border.EmptyBorder( 12, 12, 12, 12 )
@@ -40,8 +41,8 @@ new FormModel {
 							"title": new FormMessage( null, "GuiProfile.panel1.tab.title" )
 						} )
 						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-							"$horizontalGroup": "par l {space :0:435:x}"
-							"$verticalGroup": "par l {space :0:255:x}"
+							"$horizontalGroup": "par l {space :0:755:x}"
+							"$verticalGroup": "par l {space :0:435:x}"
 						} ) {
 							name: "panel2"
 						}, new FormLayoutConstraints( null ) {

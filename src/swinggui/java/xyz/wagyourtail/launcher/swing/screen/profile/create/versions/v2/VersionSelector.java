@@ -11,11 +11,14 @@ import xyz.wagyourtail.launcher.LauncherBase;
 import xyz.wagyourtail.launcher.versions.BaseVersionProvider;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.GroupLayout;
+import javax.swing.tree.TreeCellRenderer;
 
 /**
  * @author unknown
@@ -108,10 +111,13 @@ public class VersionSelector extends JPanel {
                     .addContainerGap())
         );
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
+        ((JTreeTable) treeTable).getTree().setCellRenderer((TreeCellRenderer) ((JTreeTable) treeTable).getTree().getModel());
+        ((JTreeTable) treeTable).getTree().expandRow(0);
+        ((JTreeTable) treeTable).getTree().setRootVisible(false);
         initialized = true;
     }
 
-    public class VersionTreeTableModel<T extends BaseVersionProvider.BaseVersionData> extends AbstractTreeTableModel {
+    public class VersionTreeTableModel<T extends BaseVersionProvider.BaseVersionData> extends AbstractTreeTableModel implements TreeCellRenderer {
 
         boolean hasIcon = false;
 
@@ -228,6 +234,21 @@ public class VersionSelector extends JPanel {
                 launcher.error("Failed to get child count", e);
             }
             return 0;
+        }
+
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            if (hasIcon) {
+                Image image = null;
+                try {
+                    image = ImageIO.read(((T) value).getIconUrl());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return new JLabel(new ImageIcon(image));
+            } else {
+                return new JLabel(((T) value).getTableParts()[0]);
+            }
         }
 
     }
