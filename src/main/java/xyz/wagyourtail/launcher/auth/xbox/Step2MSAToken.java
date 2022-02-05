@@ -57,7 +57,7 @@ public class Step2MSAToken extends AbstractStep<Step1MSACode.MSACode, Step2MSATo
             sb.append("&code=").append(code).append("\n");
             sb.append("&grant_type=").append(type).append("\n");
         }
-        sb.append("&redirect_uri=").append(Step1MSACode.REDIRECT_URI).append("\n");
+        sb.append("&redirect_uri=").append(Step1MSACode.REDIRECT_URI).append(prev.port()).append("\n");
         try (DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
             out.writeBytes(sb.toString());
         }

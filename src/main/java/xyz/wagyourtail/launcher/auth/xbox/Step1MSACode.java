@@ -1,6 +1,7 @@
 package xyz.wagyourtail.launcher.auth.xbox;
 
 import com.google.gson.JsonObject;
+import org.graalvm.collections.Pair;
 import xyz.wagyourtail.launcher.LauncherBase;
 import xyz.wagyourtail.launcher.auth.AbstractStep;
 import xyz.wagyourtail.launcher.auth.MSAAuthProvider;
@@ -18,8 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Step1MSACode extends AbstractStep<AbstractStep.StepResult<?, ?>, Step1MSACode.MSACode> {
-    public static final int REDIRECT_PORT = 8086;
-    public static final String REDIRECT_URI = "http://localhost:" + REDIRECT_PORT;
+    public static final String REDIRECT_URI = "http://localhost:";
     public static final String AUTH_URL = "https://login.live.com/oauth20_authorize.srf";
 
     public Step1MSACode(LauncherBase launcher) {
@@ -29,12 +29,23 @@ public class Step1MSACode extends AbstractStep<AbstractStep.StepResult<?, ?>, St
     @Override
     public MSACode applyStep(StepResult<?, ?> prev_result, Logger logger) {
         logger.info("Waiting for login...");
-        CompletableFuture<String> code = startServer();
+        Pair<CompletableFuture<ServerSocket>, CompletableFuture<String>> code = startServer();
         logger.info("If the following URL doesn't open, please copy and paste it into your browser.");
-        logger.info(getAuthURL());
-        tryWebBrowserOpen();
-        timeoutServer(code);
-        return new MSACode(this, code.join());
+        ServerSocket socket = code.t.join();
+        String authURL = getAuthURL(socket);
+        logger.info(authURL);
+        tryWebBrowserOpen(authURL);
+        timeoutServer(socket, code.u);
+        try {
+            String code_ = code.u.join();
+            if (code_ == null) {
+                throw new RuntimeException("Failed to get MSA Code");
+            }
+            return new MSACode(this, code_, socket.getLocalPort());
+        } catch (Exception e) {
+            logger.error("Login timed out.");
+            throw new RuntimeException("Failed to get MSA Code. Login timed out.");
+        }
     }
 
 
@@ -45,13 +56,21 @@ public class Step1MSACode extends AbstractStep<AbstractStep.StepResult<?, ?>, St
 
     @Override
     public MSACode fromJson(JsonObject json) {
-        return new MSACode(this, json.get("code").getAsString());
+        return new MSACode(this, json.get("code").getAsString(), json.get("port").getAsInt());
     }
 
-    public CompletableFuture<String> startServer() {
-        return CompletableFuture.supplyAsync(() -> {
-            // open server socket
-            try (ServerSocket serverSocket = new ServerSocket(REDIRECT_PORT)) {
+    public Pair<CompletableFuture<ServerSocket>, CompletableFuture<String>> startServer() {
+        CompletableFuture<ServerSocket> server = CompletableFuture.supplyAsync(() -> {
+                try {
+                    ServerSocket serverSocket = new ServerSocket(0);
+                    return serverSocket;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
+        return new Pair<>(server,
+            server.thenApplyAsync(serverSocket -> {
                 try (Socket socket = serverSocket.accept()) {
                     Scanner scanner = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
                     String GET = scanner.nextLine();
@@ -63,48 +82,55 @@ public class Step1MSACode extends AbstractStep<AbstractStep.StepResult<?, ?>, St
                         return m.group(1);
                     }
                     return null;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                } finally {
+                    try {
+                        serverSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        });
+            })
+        );
     }
 
-    public void tryWebBrowserOpen() {
+    public void tryWebBrowserOpen(String authURL) {
         // try web browser open
         try {
-            Desktop.getDesktop().browse(URI.create(getAuthURL()));
+            Desktop.getDesktop().browse(URI.create(authURL));
         } catch (UnsupportedOperationException | IOException e) {
             try {
-                Runtime.getRuntime().exec("xdg-open " + getAuthURL());
+                Runtime.getRuntime().exec("xdg-open " + authURL);
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
         }
     }
 
-    public void timeoutServer(CompletableFuture<String> code) {
+    public void timeoutServer(ServerSocket socket, CompletableFuture<String> code) {
         CompletableFuture.runAsync(() -> {
             try {
                 Thread.sleep(60000);
-            } catch (InterruptedException e) {
+                socket.close();
+            } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
             }
             code.cancel(true);
         });
     }
 
-    protected String getAuthURL() {
+    protected String getAuthURL(ServerSocket socket) {
         return AUTH_URL +
             "?client_id=" + MSAAuthProvider.CLIENT_ID +
             "&scope=" + MSAAuthProvider.SCOPES.replace(" ", "%20") +
             "&response_type=code" +
             "&prompt=select_account" +
-            "&redirect_uri=" + REDIRECT_URI;
+            "&redirect_uri=" + REDIRECT_URI + socket.getLocalPort();
     }
 
-    public record MSACode(Step1MSACode step, String code) implements StepResult<MSACode, StepResult<?, ?>> {
+    public record MSACode(Step1MSACode step, String code, int port) implements StepResult<MSACode, StepResult<?, ?>> {
 
         @Override
         public AbstractStep<StepResult<?, ?>, StepResult<MSACode, StepResult<?, ?>>> getStep() {
@@ -120,8 +146,11 @@ public class Step1MSACode extends AbstractStep<AbstractStep.StepResult<?, ?>, St
         public JsonObject toJson() {
             JsonObject json = new JsonObject();
             json.addProperty("code", code);
+            json.addProperty("port", port);
             return json;
         }
 
     }
+
+    public record Pair<T, U>(T t, U u) {}
 }
